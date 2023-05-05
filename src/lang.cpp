@@ -1,7 +1,4 @@
-#include "OLD/input/implementation/LangInputArguments.h"
-#include "OLD/input/implementation/CopyModelInputArguments.h"
-
-#include "OLD/CopyModel.h"
+#include "input/LangInputArguments.h"
 
 int main(int argc, char **argv) {
 
