@@ -9,6 +9,25 @@ int main(int argc, char **argv) {
     LangInputArguments allArguments = LangInputArguments();
     allArguments.parseArguments(argc, argv);
 
+
+
+    /* Reference Path
+     * Target Path
+     * Output Path
+     * Copy Model Alpha
+     * Copy Model Threshold
+     * Copy Model Window Size
+     * Copy Model Output
+     */
+
+    /* Output Path:
+     *
+     * Reference:
+     * Target:
+     * Total Information:
+     * Information per iteration:
+     * /
+
     bool areArgumentsValid = allArguments.checkArguments();
 
     if (!areArgumentsValid) {
