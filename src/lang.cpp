@@ -1,8 +1,7 @@
-#include "input/implementation/LangInputArguments.h"
-#include "input/implementation/CopyModelInputArguments.h"
+#include "OLD/input/implementation/LangInputArguments.h"
+#include "OLD/input/implementation/CopyModelInputArguments.h"
 
-#include "CopyModel.h"
-#include "generator/implementation/PositionalGenerator.h"
+#include "OLD/CopyModel.h"
 
 int main(int argc, char **argv) {
 
