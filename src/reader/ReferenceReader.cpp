@@ -1,7 +1,4 @@
-#include <cstring>
 #include <iostream>
-#include <codecvt>
-#include <locale>
 #include "ReferenceReader.h"
 #include "../utils/utils.h"
 
@@ -66,10 +63,6 @@ std::string ReferenceReader::getReferencePath() {
 
 int ReferenceReader::getWindowSize() const {
     return this->windowSize;
-}
-
-std::ifstream* ReferenceReader::getFileInputStream() {
-    return &this->fileInputStream;
 }
 
 char* ReferenceReader::getCurrentWindow() {

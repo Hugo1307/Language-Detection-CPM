@@ -33,8 +33,6 @@ public:
 
     [[nodiscard]] int getWindowSize() const;
 
-    std::ifstream* getFileInputStream();
-
     char* getCurrentWindow();
 
     int getCurrentPosition() const;

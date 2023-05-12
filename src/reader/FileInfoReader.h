@@ -1,11 +1,11 @@
-#ifndef SRC_FILEINFO_H
-#define SRC_FILEINFO_H
+#ifndef SRC_FILEINFOREADER_H
+#define SRC_FILEINFOREADER_H
 
 #include <set>
 #include <map>
 #include <string>
 
-class FileInfo {
+class FileInfoReader {
 
     std::string filePath;
     std::set<char> alphabet;
@@ -14,7 +14,7 @@ class FileInfo {
 
     public:
 
-        explicit FileInfo(const std::string& filePath, std::set<char> alphabet, std::map<char, int> symbolsCount, int size);
+        explicit FileInfoReader(const std::string& filePath, std::set<char> alphabet, std::map<char, int> symbolsCount, int size);
 
         std::set<char> getAlphabet();
         std::map<char, int> getSymbolsCount();
@@ -25,4 +25,4 @@ class FileInfo {
 };
 
 
-#endif //SRC_FILEINFO_H
+#endif //SRC_FILEINFOREADER_H
