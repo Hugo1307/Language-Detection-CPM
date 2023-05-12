@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+// TODO: Change this to be capable of reading the file and retrieving the necessary metrics
 class FileInfoReader {
 
     std::string filePath;

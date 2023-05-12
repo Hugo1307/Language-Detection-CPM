@@ -2,6 +2,13 @@
 #include "CopyModelReader.h"
 #include "../utils/utils.h"
 
+CopyModelReader::CopyModelReader(std::string filePath, int windowSize) {
+    this->targetPath = std::move(filePath);
+    this->windowSize = windowSize;
+    this->currentPosition = 0;
+    this->pastPosition = 0;
+}
+
 void CopyModelReader::openFile() {
 
     std::ifstream inputStream(this->targetPath);
@@ -62,3 +69,24 @@ bool CopyModelReader::expand() {
     return true;
 
 }
+
+std::string CopyModelReader::getTargetPath() {
+    return this->targetPath;
+}
+
+int CopyModelReader::getWindowSize() const {
+    return this->windowSize;
+}
+
+std::vector<char> CopyModelReader::getCurrentWindow() {
+    return this->currentWindow;
+}
+
+int CopyModelReader::getCurrentPosition() const {
+    return this->currentPosition;
+}
+
+int CopyModelReader::getPastPosition() const {
+    return this->pastPosition;
+}
+

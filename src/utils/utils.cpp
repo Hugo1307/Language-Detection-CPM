@@ -1,4 +1,3 @@
-#include <iostream>
 #include "utils.h"
 
 std::string getFileNameFromPath(const std::string& path) {
@@ -12,6 +11,17 @@ std::string convertCharArrToString(char* charArr, int size) {
 
     for (int i = 0; i < size; i++)
         generatedString += charArr[i];
+
+    return generatedString;
+
+}
+
+std::string convertVectorToString(const std::vector<char>& vector) {
+
+    std::string generatedString;
+
+    for (char i : vector)
+        generatedString += i;
 
     return generatedString;
 
@@ -40,4 +50,8 @@ bool isForbiddenCharacter(int character) {
             return false;
     }
 
+}
+
+double calculateHitProbability(const unsigned int Nh, const unsigned int Nf, const double alpha) {
+    return (double) (Nh + alpha) / (Nh + Nf + 2*alpha);
 }
