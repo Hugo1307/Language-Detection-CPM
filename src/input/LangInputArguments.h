@@ -9,9 +9,9 @@ class LangInputArguments {
 
 private:
 
-    std:string referenceFilePath{};
-    std:string targetFilePath{};
-    std:string outputFilePath{};
+    std::string referenceFilePath{};
+    std::string targetFilePath{};
+    std::string outputFilePath{};
 
     // Copy Model
 
@@ -19,7 +19,7 @@ private:
     int k = 3;
     double threshold = 0.4;
     // inputFilePath -> Same as referenceFilePath
-    std:string outputModelPath{};
+    std::string outputModelPath{};
 
 public:
 
@@ -29,9 +29,9 @@ public:
     std::string getTargetFilePath();
     std::string getOutputFilePath();
 
-    double getAlpha();
-    int getK();
-    double getThreshold();
+    double getAlpha() const;
+    int getK() const;
+    double getThreshold() const;
     std::string getOutputModelPath();
 
     void parseArguments(int argc, char *argv[]);

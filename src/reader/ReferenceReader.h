@@ -7,47 +7,37 @@
 
 class ReferenceReader {
 
-    // Constructor parameters
-    std::string filePath;
+    std::string referencePath;
     int windowSize;
 
     // File reading parameters
     std::ifstream fileInputStream;
-
-    // Handle windows
     char* currentWindow;
-    char* lastWindow;
 
     int currentPosition;
-    std::vector<char> currentSequence;
-    char nextCharacterInSequence{};
 
 public:
 
     explicit ReferenceReader(std::string filePath, int windowSize);
 
-    std::ifstream openFile();
+    void openFile();
+    bool isFileOpen();
     void closeFile();
 
     bool next();
 
-    FileInfo getFileInfo();
+    std::string getReferenceName();
 
-    char* getWindowContent();
-    char* getLastWindowContent();
-
-    std::vector<char>* getCurrentSequence();
+    // Getters
+    std::string getReferencePath();
 
     [[nodiscard]] int getWindowSize() const;
-    [[nodiscard]] int getCurrentPosition() const;
 
-    [[nodiscard]] char getNextCharacterInSequence() const;
+    std::ifstream* getFileInputStream();
 
-private:
+    char* getCurrentWindow();
 
-    void readInitialWindow();
-    bool shiftWindow();
-    void resetCurrentSequence();
+    int getCurrentPosition() const;
 
 };
 

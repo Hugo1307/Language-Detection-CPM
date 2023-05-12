@@ -1,3 +1,4 @@
+#include <cstring>
 #include "LangInputArguments.h"
 
 LangInputArguments::LangInputArguments() = default;
@@ -74,14 +75,11 @@ void LangInputArguments::parseArguments(int argc, char **argv) {
     // Note: argc - 1 because the last argument can't be a flag
     for (int i = 0; i < argc - 1; ++i) {
         if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--alpha") == 0) {
-            if (isNumber(argv[i + 1]))
-                this->alpha = atof(argv[i + 1]);
+            this->alpha = strtod(argv[i + 1], nullptr);
         } else if (strcmp(argv[i], "-k") == 0) {
-            if (isNumber(argv[i + 1]))
-                this->k = atoi(argv[i + 1]);
+            this->k = (int) strtol(argv[i + 1], nullptr, 10);
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--threshold") == 0) {
-            if (isNumber(argv[i + 1]))
-                this->threshold = atof(argv[i + 1]);
+            this->threshold = (int) strtol(argv[i + 1], nullptr, 10);
         } else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--reference") == 0) {
             this->referenceFilePath = argv[i + 1];
         } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--input") == 0) {
@@ -106,15 +104,15 @@ std::string LangInputArguments::getOutputFilePath() {
     return this->outputFilePath;
 }
 
-double LangInputArguments::getAlpha() {
+double LangInputArguments::getAlpha() const {
     return this->alpha;
 }
 
-int LangInputArguments::getK() {
+int LangInputArguments::getK() const {
     return this->k;
 }
 
-double LangInputArguments::getThreshold() {
+double LangInputArguments::getThreshold() const {
     return this->threshold;
 }
 
