@@ -1,36 +1,16 @@
 #include <iostream>
 #include "CopyModelReader.h"
-#include "../utils/utils.h"
+#include "../../utils/utils.h"
 
-CopyModelReader::CopyModelReader(std::string filePath, int windowSize) {
-    this->targetPath = std::move(filePath);
+CopyModelReader::CopyModelReader(std::string filePath, int windowSize) : Reader(std::move(filePath)) {
     this->windowSize = windowSize;
     this->currentPosition = 0;
     this->pastPosition = 0;
 }
 
-void CopyModelReader::openFile() {
-
-    std::ifstream inputStream(this->targetPath);
-
-    if (!inputStream.is_open())
-        throw std::runtime_error("Could not open file " + this->targetPath);
-
-    this->fileInputStream = std::move(inputStream);
-
-}
-
-bool CopyModelReader::isFileOpen() {
-    return this->fileInputStream.is_open();
-}
-
-void CopyModelReader::closeFile() {
-    this->fileInputStream.close();
-}
-
 bool CopyModelReader::readWindow() {
 
-    if (!this->fileInputStream.is_open())
+    if (!Reader::getFileInputStream()->is_open())
         return false;
 
     this->currentWindow.clear();
@@ -44,17 +24,17 @@ bool CopyModelReader::readWindow() {
 
 bool CopyModelReader::expand() {
 
-    if (!this->fileInputStream.is_open()) {
-        std::cerr << "[CopyModelReader::expand] File is not open" << std::endl;
+    if (!Reader::getFileInputStream()->is_open()) {
+        std::cerr << "[CopyModelReader::expand] File is not open." << std::endl;
         return false;
     }
 
-    if (this->fileInputStream.eof()) {
+    if (Reader::getFileInputStream()->eof()) {
         std::cerr << "[CopyModelReader::expand] File is at the end." << std::endl;
         return false;
     }
 
-    if (this->fileInputStream.fail()) {
+    if (Reader::getFileInputStream()->fail()) {
         std::cerr << "[CopyModelReader::expand] File failed to read." << std::endl;
         return false;
     }
@@ -64,7 +44,7 @@ bool CopyModelReader::expand() {
     // are not working properly, i.e., they usually have the "?" mark at the beginning and at the end.
     // We need to find a way to solve this in the future.
 
-    int characterRead = fileInputStream.get();
+    int characterRead = Reader::getFileInputStream()->get();
 
     // We want to read only characters that are not white lines, i.e., \n, \t, \r, etc.
     if (!isWhiteLineCharacter(characterRead) && !isForbiddenCharacter(characterRead))
@@ -74,10 +54,6 @@ bool CopyModelReader::expand() {
 
     return true;
 
-}
-
-std::string CopyModelReader::getTargetPath() {
-    return this->targetPath;
 }
 
 int CopyModelReader::getWindowSize() const {

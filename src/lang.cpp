@@ -1,11 +1,12 @@
-#include <codecvt>
 #include "input/LangInputArguments.h"
-#include "reader/ReferenceReader.h"
 #include "cpm/ModelGenerator.h"
-#include "reader/CopyModelReader.h"
-#include "reader/RandomAccessReader.h"
-#include "reader/FileInfoReader.h"
 #include "cpm/CopyModelExecutor.h"
+
+#include "IO/reader/CopyModelReader.h"
+#include "IO/reader/FileInfoReader.h"
+#include "IO/reader/RandomAccessReader.h"
+#include "IO/reader/ReferenceReader.h"
+#include "IO/writer/CopyModelOutputWriter.h"
 
 std::map<std::string, std::vector<int>> obtainModel(LangInputArguments* arguments);
 
@@ -28,10 +29,10 @@ int main(int argc, char **argv) {
     FileInfoReader fileInfoReader = FileInfoReader(allArguments.getTargetFilePath());
     RandomAccessReader randomAccessReader = RandomAccessReader(allArguments.getReferenceFilePath());
 
+    // Obtain File Information - Alphabet and File Size
     fileInfoReader.openFile();
     fileInfoReader.obtainMetrics();
     fileInfoReader.closeFile();
-
 
     copyModelReader.openFile();
     randomAccessReader.openFile();
@@ -39,13 +40,20 @@ int main(int argc, char **argv) {
     CopyModelExecutor copyModelExecutor = CopyModelExecutor(&copyModelReader, &fileInfoReader,
                                                             &randomAccessReader, model);
 
+    // Run the Copy Model on the target using the Model trained for the reference
     copyModelExecutor.run();
-
-    std::cout << copyModelExecutor.getInformationAmount() << std::endl;
 
     copyModelReader.closeFile();
     randomAccessReader.closeFile();
 
+    CopyModelOutput copyModelOutput = copyModelExecutor.generateOutput();
+
+    CopyModelOutputWriter copyModelWriter = CopyModelOutputWriter(allArguments.getOutputFilePath(),
+                                                                  &copyModelOutput);
+
+    copyModelWriter.openFile();
+    copyModelWriter.write();
+    copyModelWriter.closeFile();
 
     return EXIT_SUCCESS;
 

@@ -4,9 +4,10 @@
 
 #include <map>
 #include <vector>
-#include "../reader/CopyModelReader.h"
-#include "../reader/FileInfoReader.h"
-#include "../reader/RandomAccessReader.h"
+#include "../IO/reader/CopyModelReader.h"
+#include "../IO/reader/FileInfoReader.h"
+#include "../IO/reader/RandomAccessReader.h"
+#include "../models/CopyModelOutput.h"
 
 class CopyModelExecutor {
 
@@ -26,7 +27,11 @@ public:
 
     void run();
 
-    double getInformationAmount() const;
+    [[nodiscard]] CopyModelOutput generateOutput();
+
+    [[nodiscard]] double getInformationAmount() const;
+    [[nodiscard]] double getInformationPerSymbol() const;
+    [[nodiscard]] std::vector<double>* getInformationPerIteration();
 
 };
 

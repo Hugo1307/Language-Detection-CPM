@@ -5,36 +5,25 @@
 #include <fstream>
 #include <vector>
 
-class ReferenceReader {
+#include "Reader.h"
 
-    std::string referencePath;
+class ReferenceReader : public Reader {
+
     int windowSize;
-
-    // File reading parameters
-    std::ifstream fileInputStream;
     char* currentWindow;
-
     int currentPosition;
 
 public:
 
     explicit ReferenceReader(std::string filePath, int windowSize);
 
-    void openFile();
-    bool isFileOpen();
-    void closeFile();
-
     bool next();
 
     std::string getReferenceName();
 
     // Getters
-    std::string getReferencePath();
-
     [[nodiscard]] int getWindowSize() const;
-
     char* getCurrentWindow();
-
     int getCurrentPosition() const;
 
 };

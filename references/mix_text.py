@@ -3,8 +3,8 @@ from os.path import isfile, join
 from random import sample, randint, choice
 from json import dump, dumps
 
-path = "./europarl20/"
-target_path = "./target/"
+path = "europarl20/"
+target_path = "target/"
 
 
 onlyfiles = {f.rstrip(".txt") : join(path, f) for f in listdir(path) if isfile(join(path, f))}

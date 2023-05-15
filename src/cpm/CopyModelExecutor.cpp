@@ -2,7 +2,6 @@
 #include "CopyModelExecutor.h"
 #include "../utils/utils.h"
 #include "HitsMissesInfo.h"
-#include <iostream>
 
 #define THRESHOLD 0.5
 #define ALPHA 0.5
@@ -108,4 +107,21 @@ void CopyModelExecutor::run() {
 
 double CopyModelExecutor::getInformationAmount() const {
     return informationAmount;
+}
+
+double CopyModelExecutor::getInformationPerSymbol() const {
+    return informationAmount / fileInfoReader->getSize();
+}
+
+std::vector<double>* CopyModelExecutor::getInformationPerIteration() {
+    return new std::vector<double>();
+}
+
+CopyModelOutput CopyModelExecutor::generateOutput() {
+
+    return {"", fileInfoReader->getFilePath(),
+                           getInformationAmount(),
+                           getInformationPerSymbol(),
+                           getInformationPerIteration()};
+
 }

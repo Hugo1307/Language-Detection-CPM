@@ -21,7 +21,7 @@ void ModelGenerator::save() {
     std::ofstream modelOutputFile(modelOutputPath);
 
     if (!modelOutputFile.is_open()) {
-        throw std::runtime_error("[ModelGenerator::save] Could not open file: " + modelOutputPath);
+        throw std::runtime_error("[ModelGenerator::save] Could not openFile file: " + modelOutputPath);
     }
 
     modelOutputFile << "Model - " << this->referenceReader->getReferenceName() << std::endl;
@@ -74,7 +74,7 @@ void ModelGenerator::load() {
     std::ifstream modelFileInputStream(modelOutputPath);
 
     if (!modelFileInputStream.is_open()) {
-        throw std::runtime_error("[ModelGenerator::load] Could not open file: " + modelOutputPath);
+        throw std::runtime_error("[ModelGenerator::load] Could not openFile file: " + modelOutputPath);
     }
 
     std::string line;

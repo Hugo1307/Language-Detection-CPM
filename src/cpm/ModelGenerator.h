@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "../reader/ReferenceReader.h"
+
+#include "../IO/reader/ReferenceReader.h"
 
 class ModelGenerator {
 

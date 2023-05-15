@@ -5,13 +5,11 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include "Reader.h"
 
-class CopyModelReader {
+class CopyModelReader : public Reader {
 
-    std::string targetPath;
     int windowSize;
-
-    std::ifstream fileInputStream;
     std::vector<char> currentWindow;
 
     int currentPosition;    // Position where we are reading currently
@@ -21,15 +19,10 @@ public:
 
     explicit CopyModelReader(std::string filePath, int windowSize);
 
-    void openFile();
-    bool isFileOpen();
-    void closeFile();
-
     bool readWindow();
     bool expand();
 
     // Getters
-    std::string getTargetPath();
     [[nodiscard]] int getWindowSize() const;
 
     std::vector<char> getCurrentWindow();

@@ -3,5 +3,5 @@ project(src)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(lang lang.cpp reader/FileInfoReader.cpp reader/ReferenceReader.cpp input/LangInputArguments.cpp cpm/ModelGenerator.cpp utils/utils.cpp utils/utils.h cpm/CopyModelExecutor.cpp cpm/CopyModelExecutor.h
-        cpm/HitsMissesInfo.h cpm/HitsMissesInfo.cpp reader/CopyModelReader.cpp reader/CopyModelReader.h reader/RandomAccessReader.cpp)
+add_executable(lang lang.cpp IO/reader/FileInfoReader.cpp IO/reader/ReferenceReader.cpp input/LangInputArguments.cpp cpm/ModelGenerator.cpp utils/utils.cpp utils/utils.h cpm/CopyModelExecutor.cpp cpm/CopyModelExecutor.h
+        cpm/HitsMissesInfo.h cpm/HitsMissesInfo.cpp IO/reader/CopyModelReader.cpp IO/reader/CopyModelReader.h IO/reader/RandomAccessReader.cpp IO/writer/CopyModelOutputWriter.cpp IO/writer/CopyModelOutputWriter.h models/CopyModelOutput.cpp models/CopyModelOutput.h IO/IOEntity.h IO/reader/Reader.cpp IO/reader/Reader.h IO/writer/Writer.cpp IO/writer/Writer.h)
