@@ -21,12 +21,12 @@ class CopyModelExecutor {
 
 public:
 
-    explicit CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, RandomAccessReader* randomReader,
+    CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, RandomAccessReader* randomReader,
                                const std::map<std::string, std::vector<int>> &model);
 
     void run();
 
-    double getInformationAmount();
+    double getInformationAmount() const;
 
 };
 

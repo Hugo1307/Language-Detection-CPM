@@ -1,38 +1,59 @@
 #include "FileInfoReader.h"
+#include "../utils/utils.h"
 
 #include <utility>
 
-FileInfoReader::FileInfoReader(const std::string& filePath, std::set<char> alphabet, std::map<char, int> symbolsCount, int size) {
-    this->alphabet = std::move(alphabet);
-    this->symbolsCount = std::move(symbolsCount);
-    this->size = size;
+FileInfoReader::FileInfoReader(const std::string& filePath) {
     this->filePath = filePath;
 }
 
-std::set<char> FileInfoReader::getAlphabet() {
-    return this->alphabet;
-}
+void FileInfoReader::openFile() {
 
-std::map<char, int> FileInfoReader::getSymbolsCount() {
-    return this->symbolsCount;
-}
+    // Read file character by character
+    std::ifstream inputStream(this->filePath);
 
-std::map<char, double> FileInfoReader::getSymbolsDistribution() {
+    if (!inputStream.is_open())
+        throw std::runtime_error("Could not open file: " + this->filePath);
 
-    std::map<char, double> symbolsDistribution;
-
-    for (auto &symbol : this->symbolsCount)
-        symbolsDistribution[symbol.first] = (double) symbol.second / this->size;
-
-    return symbolsDistribution;
+    this->fileInputStream = std::move(inputStream);
 
 }
 
-int FileInfoReader::getSize() const {
-    return this->size;
+bool FileInfoReader::isFileOpen() {
+    return this->fileInputStream.is_open();
+}
+
+void FileInfoReader::closeFile() {
+    this->fileInputStream.close();
+}
+
+void FileInfoReader::obtainMetrics() {
+
+    if (!this->fileInputStream.is_open())
+        throw std::runtime_error("File is not open");
+
+    int characterRead;
+
+    while ((characterRead = this->fileInputStream.get()) != EOF) {
+
+        if (isWhiteLineCharacter(characterRead) || isForbiddenCharacter(characterRead))
+            continue;
+
+        this->alphabet.insert((char) characterRead);
+        this->size++;
+
+    }
+
 }
 
 std::string FileInfoReader::getFilePath() const {
     return this->filePath;
 }
 
+std::set<char> FileInfoReader::getAlphabet() {
+    return this->alphabet;
+}
+
+int FileInfoReader::getSize() const {
+    return this->size;
+}

@@ -2,6 +2,7 @@
 #include "CopyModelExecutor.h"
 #include "../utils/utils.h"
 #include "HitsMissesInfo.h"
+#include <iostream>
 
 #define THRESHOLD 0.5
 #define ALPHA 0.5
@@ -24,6 +25,8 @@ void CopyModelExecutor::run() {
 
         // If the sequence exists in the model
         if (model.count(sequenceAsString) > 0 && model[sequenceAsString][0] < fileReader->getCurrentPosition() - 1) {
+
+            // std::cout << "Exists in model: "  << sequenceAsString << std::endl;
 
             int currentPointerIndex = 0;
 
@@ -80,11 +83,16 @@ void CopyModelExecutor::run() {
 
                 }
 
-                std::printf("Building Copy Model... %f\r", informationAmount);
-                std::fflush(stdout);
-
             }
 
+            if (probabilityOfCorrectPrediction < THRESHOLD && model[sequenceAsString].size() > 1) {
+
+                // Change the pointer to the next one
+                currentPointerIndexForSequence[sequenceAsString] += 1;
+
+                // std::cout << "Changed Pointer" << std::endl;
+
+            }
 
         } else {
 
@@ -96,6 +104,8 @@ void CopyModelExecutor::run() {
 
     }
 
+}
 
-
+double CopyModelExecutor::getInformationAmount() const {
+    return informationAmount;
 }

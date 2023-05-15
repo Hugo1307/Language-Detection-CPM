@@ -5,6 +5,7 @@
 #include "reader/CopyModelReader.h"
 #include "reader/RandomAccessReader.h"
 #include "reader/FileInfoReader.h"
+#include "cpm/CopyModelExecutor.h"
 
 std::map<std::string, std::vector<int>> obtainModel(LangInputArguments* arguments);
 
@@ -14,13 +15,36 @@ int main(int argc, char **argv) {
     LangInputArguments allArguments = LangInputArguments();
     allArguments.parseArguments(argc, argv);
 
+    if (!allArguments.checkArguments()) {
+        std::cerr << "Invalid arguments" << std::endl;
+        return EXIT_FAILURE;
+    }
+
     // Obtain the model for the reference file
     std::map<std::string, std::vector<int>> model = obtainModel(&allArguments);
 
     // Todo: Run the model over the target file
-    CopyModelReader reader = CopyModelReader(allArguments.getTargetFilePath(), allArguments.getK());
-    FileInfoReader fileInfoReader = FileInfoReader(allArguments.getTargetFilePath(), allArguments.getK());
+    CopyModelReader copyModelReader = CopyModelReader(allArguments.getTargetFilePath(), allArguments.getK());
+    FileInfoReader fileInfoReader = FileInfoReader(allArguments.getTargetFilePath());
     RandomAccessReader randomAccessReader = RandomAccessReader(allArguments.getReferenceFilePath());
+
+    fileInfoReader.openFile();
+    fileInfoReader.obtainMetrics();
+    fileInfoReader.closeFile();
+
+
+    copyModelReader.openFile();
+    randomAccessReader.openFile();
+
+    CopyModelExecutor copyModelExecutor = CopyModelExecutor(&copyModelReader, &fileInfoReader,
+                                                            &randomAccessReader, model);
+
+    copyModelExecutor.run();
+
+    std::cout << copyModelExecutor.getInformationAmount() << std::endl;
+
+    copyModelReader.closeFile();
+    randomAccessReader.closeFile();
 
 
     return EXIT_SUCCESS;

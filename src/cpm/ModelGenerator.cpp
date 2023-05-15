@@ -96,6 +96,8 @@ void ModelGenerator::load() {
             currentSplitPosition = positions.find(',');
         }
 
+        this->sequencePositions[window] = positionsVector;
+
     }
 
     modelFileInputStream.close();

@@ -36,7 +36,8 @@ bool CopyModelReader::readWindow() {
     this->currentWindow.clear();
 
     for (int i = 0; i < this->windowSize; i++)
-        this->expand();
+        if (!this->expand())
+            return false;
     return true;
 
 }
@@ -48,8 +49,13 @@ bool CopyModelReader::expand() {
         return false;
     }
 
-    if (this->fileInputStream.eof() || this->fileInputStream.fail()) {
-        std::cerr << "[CopyModelReader::expand] File is at the end or failed to read." << std::endl;
+    if (this->fileInputStream.eof()) {
+        std::cerr << "[CopyModelReader::expand] File is at the end." << std::endl;
+        return false;
+    }
+
+    if (this->fileInputStream.fail()) {
+        std::cerr << "[CopyModelReader::expand] File failed to read." << std::endl;
         return false;
     }
 
