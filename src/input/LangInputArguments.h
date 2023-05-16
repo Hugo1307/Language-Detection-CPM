@@ -29,9 +29,9 @@ public:
     std::string getTargetFilePath();
     std::string getOutputFilePath();
 
-    double getAlpha() const;
-    int getK() const;
-    double getThreshold() const;
+    [[nodiscard]] double getAlpha() const;
+    [[nodiscard]] int getK() const;
+    [[nodiscard]] double getThreshold() const;
     std::string getOutputModelPath();
 
     void parseArguments(int argc, char *argv[]);

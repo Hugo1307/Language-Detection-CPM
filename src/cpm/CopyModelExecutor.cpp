@@ -1,22 +1,26 @@
 #include <cmath>
+#include <utility>
+#include <iostream>
+
 #include "CopyModelExecutor.h"
 #include "../utils/utils.h"
 #include "HitsMissesInfo.h"
 
-#define THRESHOLD 0.5
-#define ALPHA 0.5
-
 CopyModelExecutor::CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, RandomAccessReader* randomReader,
-                                     const std::map<std::string, std::vector<int>> &model) {
-    this->model = model;
+                                     GeneratedModel* generatedModel) {
+
+    this->generatedModel = generatedModel;
     this->copyModelReader = reader;
     this->fileInfoReader = fileInfo;
     this->randomAccessReader = randomReader;
+    this->informationPerIteration = new std::vector<double>();
+
 }
 
-void CopyModelExecutor::run() {
+void CopyModelExecutor::run(double alpha, double threshold) {
 
     CopyModelReader* fileReader = this->copyModelReader;
+    std::map<std::string, std::vector<int>> model = this->generatedModel->getModel();
 
     while (fileReader->readWindow()) {
 
@@ -47,7 +51,7 @@ void CopyModelExecutor::run() {
 
             int expandedCharacters = 0;
 
-            while (fileReader->expand() && probabilityOfCorrectPrediction >= THRESHOLD) {
+            while (fileReader->expand()) {
 
                 // int pastSequenceOffset = (int)fileReader.getCurrentSequence()->size() - (fileReader.getWindowSize()-1);
                 char predictedChar = randomAccessReader->getCharAt(pastSequencePosition + expandedCharacters++);
@@ -55,7 +59,7 @@ void CopyModelExecutor::run() {
 
                 // Calculate the probability P (a.k.a. probability of Hit)
                 probabilityOfCorrectPrediction = calculateHitProbability(hitsMissesInfo.getHits(),
-                                                                         hitsMissesInfo.getMisses(), ALPHA);
+                                                                         hitsMissesInfo.getMisses(), alpha);
 
                 // Value to distribute for other characters
                 double complementaryProbability = 1-probabilityOfCorrectPrediction;
@@ -68,7 +72,12 @@ void CopyModelExecutor::run() {
 
                     // The total information is the sum of the information of each character at that point taking into
                     // account the probability of the character being correct
-                    informationAmount += -std::log2(probabilityOfCorrectPrediction);
+                    double currentInformation = -std::log2(probabilityOfCorrectPrediction);
+
+                    // std::cout << "Current Information (on Hit " << convertVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
+
+                    informationAmount += currentInformation;
+                    informationPerIteration->push_back(currentInformation);
 
                 } else { // Otherwise, next character in sequence != of character in copy model, we have a miss
 
@@ -78,26 +87,35 @@ void CopyModelExecutor::run() {
 
                     // The total information is the sum of the information of each character at that point taking into
                     // account the probability of the character being correct
-                    informationAmount += -std::log2(probabilityOfFail);
+                    double currentInformation = -std::log2(probabilityOfFail);
+
+                    // std::cout << "Current Information (on Fail " << convertVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
+
+                    informationAmount += currentInformation;
+                    informationPerIteration->push_back(currentInformation);
 
                 }
 
+                // Interrupt loop if the probability is below the threshold
+                if (probabilityOfCorrectPrediction < threshold) break;
+
             }
 
-            if (probabilityOfCorrectPrediction < THRESHOLD && model[sequenceAsString].size() > 1) {
-
+            if (probabilityOfCorrectPrediction < threshold && model[sequenceAsString].size() > 1) {
                 // Change the pointer to the next one
                 currentPointerIndexForSequence[sequenceAsString] += 1;
-
-                // std::cout << "Changed Pointer" << std::endl;
-
             }
 
         } else {
 
             // Once we can't initialize the copy model, we do a uniform distribution of probabilities for all characters
             // calculate the information and add it to the total amount of information
-            informationAmount += -std::log2(1.0 / (int)fileInfoReader->getAlphabet().size());
+            double currentInformation = -std::log2(1.0 / (int)fileInfoReader->getAlphabet().size());
+
+            // std::cout << "Current Information (on Not Found " << sequenceAsString << "): " << currentInformation << std::endl;
+
+            informationAmount += currentInformation;
+            informationPerIteration->push_back(currentInformation);
 
         }
 
@@ -114,12 +132,12 @@ double CopyModelExecutor::getInformationPerSymbol() const {
 }
 
 std::vector<double>* CopyModelExecutor::getInformationPerIteration() {
-    return new std::vector<double>();
+    return informationPerIteration;
 }
 
 CopyModelOutput CopyModelExecutor::generateOutput() {
 
-    return {"", fileInfoReader->getFilePath(),
+    return {generatedModel->getReferencePath(), fileInfoReader->getFilePath(),
                            getInformationAmount(),
                            getInformationPerSymbol(),
                            getInformationPerIteration()};

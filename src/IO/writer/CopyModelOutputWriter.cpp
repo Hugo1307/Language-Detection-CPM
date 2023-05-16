@@ -19,8 +19,8 @@ void CopyModelOutputWriter::write() {
     *Writer::getFileOutputStream() << "Target: " << this->copyModelOutput->getTargetPath() << std::endl;
     *Writer::getFileOutputStream() << "Total Information: " << this->copyModelOutput->getTotalInformationAmount() << std::endl;
     *Writer::getFileOutputStream() << "Information p/ Symbol: " << this->copyModelOutput->getInformationPerSymbol() << std::endl;
+    *Writer::getFileOutputStream() << "Information p/ Iteration: " << std::endl;
 
-    // TODO: The getInformationPerIteration returns a pointer to a vector. We need to deference it and output the values
-    *Writer::getFileOutputStream() << "Information p/ Iteration: " << this->copyModelOutput->getInformationPerIteration() << std::endl;
+    this->copyModelOutput->storeInformationPerIteration(this);
 
 }

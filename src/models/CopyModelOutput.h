@@ -2,6 +2,7 @@
 #define SRC_COPYMODELOUTPUT_H
 
 #include <string>
+#include "../IO/writer/Writer.h"
 
 class CopyModelOutput {
 
@@ -25,6 +26,10 @@ public:
     [[nodiscard]] double getInformationPerSymbol() const;
 
     [[nodiscard]] std::vector<double>* getInformationPerIteration();
+
+    void presentInformationPerIteration(bool truncated);
+
+    void storeInformationPerIteration(Writer* writer);
 
 };
 

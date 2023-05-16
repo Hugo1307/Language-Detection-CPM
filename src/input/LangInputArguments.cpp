@@ -79,7 +79,7 @@ void LangInputArguments::parseArguments(int argc, char **argv) {
         } else if (strcmp(argv[i], "-k") == 0) {
             this->k = (int) strtol(argv[i + 1], nullptr, 10);
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--threshold") == 0) {
-            this->threshold = (int) strtol(argv[i + 1], nullptr, 10);
+            this->threshold = strtod(argv[i + 1], nullptr);
         } else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--reference") == 0) {
             this->referenceFilePath = argv[i + 1];
         } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--input") == 0) {

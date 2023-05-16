@@ -14,7 +14,6 @@ class Reader : public IOEntity {
 public:
 
     explicit Reader(std::string filePath);
-    ~Reader() override = default;
 
     void openFile() override;
     bool isFileOpen() override;

@@ -7,8 +7,13 @@
 #include "IO/reader/RandomAccessReader.h"
 #include "IO/reader/ReferenceReader.h"
 #include "IO/writer/CopyModelOutputWriter.h"
+#include "models/GeneratedModel.h"
 
-std::map<std::string, std::vector<int>> obtainModel(LangInputArguments* arguments);
+GeneratedModel obtainModel(LangInputArguments* arguments);
+FileInfoReader obtainFileInfo(LangInputArguments* arguments);
+CopyModelOutput runCopyModel(LangInputArguments* arguments, FileInfoReader* fileInfoReader, GeneratedModel* model);
+void storeCopyModelOutput(LangInputArguments* arguments, CopyModelOutput* output);
+void printCopyModelOutput(CopyModelOutput* output);
 
 int main(int argc, char **argv) {
 
@@ -22,44 +27,25 @@ int main(int argc, char **argv) {
     }
 
     // Obtain the model for the reference file
-    std::map<std::string, std::vector<int>> model = obtainModel(&allArguments);
+    GeneratedModel model = obtainModel(&allArguments);
 
-    // Todo: Run the model over the target file
-    CopyModelReader copyModelReader = CopyModelReader(allArguments.getTargetFilePath(), allArguments.getK());
-    FileInfoReader fileInfoReader = FileInfoReader(allArguments.getTargetFilePath());
-    RandomAccessReader randomAccessReader = RandomAccessReader(allArguments.getReferenceFilePath());
+    // Obtain information for target File
+    FileInfoReader fileInfoReader = obtainFileInfo(&allArguments);
 
-    // Obtain File Information - Alphabet and File Size
-    fileInfoReader.openFile();
-    fileInfoReader.obtainMetrics();
-    fileInfoReader.closeFile();
+    // Run the Copy Model and obtain the output
+    CopyModelOutput copyModelOutput = runCopyModel(&allArguments, &fileInfoReader, &model);
 
-    copyModelReader.openFile();
-    randomAccessReader.openFile();
+    // Write the Copy Model output
+    storeCopyModelOutput(&allArguments, &copyModelOutput);
 
-    CopyModelExecutor copyModelExecutor = CopyModelExecutor(&copyModelReader, &fileInfoReader,
-                                                            &randomAccessReader, model);
-
-    // Run the Copy Model on the target using the Model trained for the reference
-    copyModelExecutor.run();
-
-    copyModelReader.closeFile();
-    randomAccessReader.closeFile();
-
-    CopyModelOutput copyModelOutput = copyModelExecutor.generateOutput();
-
-    CopyModelOutputWriter copyModelWriter = CopyModelOutputWriter(allArguments.getOutputFilePath(),
-                                                                  &copyModelOutput);
-
-    copyModelWriter.openFile();
-    copyModelWriter.write();
-    copyModelWriter.closeFile();
+    // Print the Copy Model Results
+    printCopyModelOutput(&copyModelOutput);
 
     return EXIT_SUCCESS;
 
 }
 
-std::map<std::string, std::vector<int>> obtainModel(LangInputArguments* arguments) {
+GeneratedModel obtainModel(LangInputArguments* arguments) {
 
     ReferenceReader reader = ReferenceReader(arguments->getReferenceFilePath(), arguments->getK());
     ModelGenerator copyModelGenerator = ModelGenerator(&reader, arguments->getOutputModelPath());
@@ -73,10 +59,70 @@ std::map<std::string, std::vector<int>> obtainModel(LangInputArguments* argument
         copyModelGenerator.save();
     }
 
-    return copyModelGenerator.getModel();
+    return {arguments->getReferenceFilePath(), copyModelGenerator.getModel()};
 
 }
 
+FileInfoReader obtainFileInfo(LangInputArguments* arguments) {
+
+    FileInfoReader fileInfoReader = FileInfoReader(arguments->getTargetFilePath());
+
+    fileInfoReader.openFile();
+    fileInfoReader.obtainMetrics();
+    fileInfoReader.closeFile();
+
+    return fileInfoReader;
+
+}
+
+CopyModelOutput runCopyModel(LangInputArguments* arguments, FileInfoReader* fileInfoReader, GeneratedModel* model) {
+
+    // Todo: Run the model over the target file
+    auto* copyModelReader = new CopyModelReader(arguments->getTargetFilePath(), arguments->getK());
+    auto* randomAccessReader = new RandomAccessReader(arguments->getReferenceFilePath());
+
+    copyModelReader->openFile();
+    randomAccessReader->openFile();
+
+    CopyModelExecutor copyModelExecutor = CopyModelExecutor(copyModelReader, fileInfoReader,
+                                                            randomAccessReader, model);
+
+    // Run the Copy Model on the target using the Model trained for the reference
+    copyModelExecutor.run(arguments->getAlpha(), arguments->getThreshold());
+
+    copyModelReader->closeFile();
+    randomAccessReader->closeFile();
+
+    return copyModelExecutor.generateOutput();
+
+}
+
+void storeCopyModelOutput(LangInputArguments* arguments, CopyModelOutput* output) {
+
+    CopyModelOutputWriter copyModelWriter = CopyModelOutputWriter(arguments->getOutputFilePath(),
+                                                                  output);
+
+    copyModelWriter.openFile();
+    copyModelWriter.write();
+    copyModelWriter.closeFile();
+
+}
+
+void printCopyModelOutput(CopyModelOutput* output) {
+
+    std::cout << "[!] Finished Copy Model Execution" << std::endl;
+    std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" << std::endl;
+    std::cout << "Results: " << std::endl;
+    std::cout << std::endl;
+    std::cout << "  Reference: " << output->getReferencePath() << std::endl;
+    std::cout << "  Target: " << output->getTargetPath() << std::endl;
+    std::cout << "  Total Information: " << output->getTotalInformationAmount() << std::endl;
+    std::cout << "  Information per symbol: " << output->getInformationPerSymbol() << std::endl;
+    std::cout << "  Information per iteration: " << std::endl;
+    output->presentInformationPerIteration(true);
+    std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" << std::endl;
+
+}
 
 /* Reference Path
  * Target Path

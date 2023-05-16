@@ -30,6 +30,10 @@ public:
     int getCurrentPosition() const;
     int getPastPosition() const;
 
+private:
+
+    void shiftWindow();
+
 };
 
 

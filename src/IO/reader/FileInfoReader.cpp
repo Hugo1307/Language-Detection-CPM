@@ -14,10 +14,10 @@ void FileInfoReader::obtainMetrics() {
 
     while ((characterRead = Reader::getFileInputStream()->get()) != EOF) {
 
-        if (isWhiteLineCharacter(characterRead) || isForbiddenCharacter(characterRead))
-            continue;
+        if (!isWhiteLineCharacter(characterRead) && !isForbiddenCharacter(characterRead)) {
+            this->alphabet.insert((char) characterRead);
+        }
 
-        this->alphabet.insert((char) characterRead);
         this->size++;
 
     }

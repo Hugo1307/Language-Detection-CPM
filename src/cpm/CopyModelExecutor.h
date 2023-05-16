@@ -8,14 +8,16 @@
 #include "../IO/reader/FileInfoReader.h"
 #include "../IO/reader/RandomAccessReader.h"
 #include "../models/CopyModelOutput.h"
+#include "../models/GeneratedModel.h"
 
 class CopyModelExecutor {
 
     CopyModelReader* copyModelReader;
     FileInfoReader* fileInfoReader;
     RandomAccessReader* randomAccessReader;
-    std::map<std::string, std::vector<int>> model;
+    GeneratedModel* generatedModel;
 
+    std::vector<double>* informationPerIteration;
     std::map<std::string, int> currentPointerIndexForSequence;
 
     double informationAmount = 0;
@@ -23,9 +25,9 @@ class CopyModelExecutor {
 public:
 
     CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, RandomAccessReader* randomReader,
-                               const std::map<std::string, std::vector<int>> &model);
+                               GeneratedModel* generatedModel);
 
-    void run();
+    void run(double alpha, double threshold);
 
     [[nodiscard]] CopyModelOutput generateOutput();
 
