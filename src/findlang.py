@@ -1,14 +1,8 @@
-from os import listdir
 from os import scandir
-from os.path import isfile, join
-from random import sample, randint, choice
-from json import dump, dumps
+from os.path import join
 import subprocess
 import sys
 import os
-
-path = "../references/europarl20/"
-target_path = "../references/target/"
 
 def main():
 

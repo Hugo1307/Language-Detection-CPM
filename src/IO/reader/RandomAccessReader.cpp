@@ -13,7 +13,7 @@ FILE* RandomAccessReader::openFile() {
     FILE* target = fopen(filePath.c_str(), "rb");
 
     if (target == nullptr) {
-        std::cerr << "Error reading text file " << filePath.c_str() << ": " << stderr << std::endl;
+        std::cerr << "Error reading text file " << filePath.c_str() << ": " << strerror(errno) << std::endl;
         return nullptr;
     }
 
