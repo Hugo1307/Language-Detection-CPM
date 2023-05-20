@@ -13,6 +13,7 @@ class ModelGenerator {
     ReferenceReader* referenceReader;
     std::string outputPath; // Path for the directory where the generated models will be stored
     std::map<std::string, std::vector<int>> sequencePositions;
+    std::map<std::string, std::map<std::string, int>> finiteContextCounts;
 
 public:
 
@@ -20,7 +21,7 @@ public:
 
     /**
      * Check if we already have a cached model for the current reference file
-     * @return true if we have a stored mode, false otherwise
+     * @return true if we have a stored model, false otherwise
      */
     bool isCached();
 

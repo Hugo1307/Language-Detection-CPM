@@ -2,6 +2,8 @@
 #define SRC_COPYMODELOUTPUT_H
 
 #include <string>
+#include <vector>
+
 #include "../IO/writer/Writer.h"
 
 class CopyModelOutput {

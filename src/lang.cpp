@@ -1,4 +1,4 @@
-#include "input/LangInputArguments.h"
+#include "args/LangInputArguments.h"
 #include "cpm/ModelGenerator.h"
 #include "cpm/CopyModelExecutor.h"
 
