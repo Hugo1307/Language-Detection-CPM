@@ -21,7 +21,7 @@ void ModelGenerator::save() {
     std::ofstream modelOutputFile(modelOutputPath);
 
     if (!modelOutputFile.is_open()) {
-        throw std::runtime_error("[ModelGenerator::save] Could not openFile file: " + modelOutputPath);
+        throw std::runtime_error("[ModelGenerator::save] Could not open file " + modelOutputPath);
     }
 
     modelOutputFile << "Model - " << this->referenceReader->getReferenceName() << std::endl;
@@ -54,8 +54,18 @@ void ModelGenerator::run() {
 
     while (reader->next()) {
 
-        std::string sequenceStr = convertCharArrToString(reader->getCurrentWindow(), reader->getWindowSize());
+        std::string sequenceStr = convertUCharArrToString(reader->getCurrentWindow(), reader->getAllocatedWindowSize());
+
+        std::string lastCharacterOfSequence = getLastCharacterInString(sequenceStr);
+        std::string sequenceWithoutLastCharacter = getAllButLastCharacterInString(sequenceStr);
+
         this->sequencePositions[sequenceStr].push_back(reader->getCurrentPosition());
+
+        if (this->finiteContextCounts[lastCharacterOfSequence].count(sequenceWithoutLastCharacter) != 0) {
+            this->finiteContextCounts[lastCharacterOfSequence][sequenceWithoutLastCharacter] += 1;
+        } else {
+            this->finiteContextCounts[lastCharacterOfSequence][sequenceWithoutLastCharacter] += 0;
+        }
 
     }
 

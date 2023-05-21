@@ -4,7 +4,8 @@
 
 ReferenceReader::ReferenceReader(std::string filePath, int windowSize) : Reader(std::move(filePath)) {
     this->windowSize = windowSize;
-    this->currentWindow = static_cast<char*>(calloc(windowSize, sizeof(char)));
+    this->allocatedWindowSize = windowSize;
+    this->currentWindow = static_cast<unsigned char*>(calloc(allocatedWindowSize, sizeof(char)));
     this->currentPosition = 0;
 }
 
@@ -13,7 +14,11 @@ bool ReferenceReader::next() {
     if (!Reader::getFileInputStream()->is_open())
         return false;
 
-    for (int i = 0; i < this->windowSize; i++) {
+    // Reset Allocated Window Size
+    // It needs to be in the start of the function!!
+    this->allocatedWindowSize = this->windowSize;
+
+    for (int i = 0; i < this->allocatedWindowSize; i++) {
 
         if (Reader::getFileInputStream()->eof())
             return false;
@@ -21,12 +26,19 @@ bool ReferenceReader::next() {
         if (Reader::getFileInputStream()->fail())
             return false;
 
-        // TODO: When we read a new character, we are reading an integer. This integer is then converted to a char.
-        // In practice, it will be truncated and we will only obtain the first 1 Byte. This is the reason why our windows
-        // are not working properly, i.e., they usually have the "?" mark at the beginning and at the end.
-        // We need to find a way to solve this in the future.
+        unsigned char characterRead = Reader::getFileInputStream()->get();
+        int numberOfBytes = numOfBytesInUTF8(characterRead);
 
-        int characterRead = Reader::getFileInputStream()->get();
+        // If we are reading the first byte of a UTF-8 character
+        if (numberOfBytes != -1) {
+
+            int newCharacters = numberOfBytes - 1;
+
+            // We will expand the window to accommodate the bytes that belong to the current character
+            this->allocatedWindowSize += newCharacters;
+            this->currentWindow = (unsigned char*) realloc(this->currentWindow, this->allocatedWindowSize);
+
+        }
 
         // We want to read only characters that are not white lines, i.e., \n, \t, \r, etc.
         if (!isWhiteLineCharacter(characterRead) && !isForbiddenCharacter(characterRead))
@@ -44,7 +56,7 @@ int ReferenceReader::getWindowSize() const {
     return this->windowSize;
 }
 
-char* ReferenceReader::getCurrentWindow() {
+unsigned char* ReferenceReader::getCurrentWindow() {
     return this->currentWindow;
 }
 
@@ -54,4 +66,8 @@ std::string ReferenceReader::getReferenceName() {
 
 int ReferenceReader::getCurrentPosition() const {
     return this->currentPosition;
+}
+
+int ReferenceReader::getAllocatedWindowSize() const {
+    return this->allocatedWindowSize;
 }

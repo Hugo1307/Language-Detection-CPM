@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <iostream>
+#include <cstring>
 
 RandomAccessReader::RandomAccessReader(std::string filePath) {
     this->filePath = std::move(filePath);

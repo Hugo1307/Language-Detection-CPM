@@ -10,7 +10,8 @@
 class ReferenceReader : public Reader {
 
     int windowSize;
-    char* currentWindow;
+    int allocatedWindowSize;
+    unsigned char* currentWindow;
     int currentPosition;
 
 public:
@@ -23,7 +24,8 @@ public:
 
     // Getters
     [[nodiscard]] int getWindowSize() const;
-    char* getCurrentWindow();
+    [[nodiscard]] int getAllocatedWindowSize() const;
+    unsigned char* getCurrentWindow();
     int getCurrentPosition() const;
 
 };
