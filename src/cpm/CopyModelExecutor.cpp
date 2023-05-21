@@ -28,7 +28,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
         std::string sequenceAsString = convertVectorToString(fileReader->getCurrentWindow());
 
         // If the sequence exists in the positional Model
-        if (positionalModel.count(sequenceAsString) > 0 && positionalModel[sequenceAsString][0] < fileReader->getCurrentPosition() - 1) {
+        if (positionalModel.count(sequenceAsString) > 0) {
 
             // std::cout << "Exists in Positional Model: "  << sequenceAsString << std::endl;
 
@@ -100,7 +100,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                     double probabilityOfFail;
 
                     if (useFiniteContext) {
-                        probabilityOfFail = countOfCharWithContext + alpha / countOfAlphabetWithContext;
+                        probabilityOfFail = (countOfCharWithContext + alpha) / countOfAlphabetWithContext;
                     } else {
                         probabilityOfFail = complementaryProbability / (int) (fileInfoReader->getAlphabet().size()-1);
                     }

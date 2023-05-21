@@ -48,16 +48,7 @@ int main(int argc, char **argv) {
 GeneratedModel obtainModel(LangInputArguments* arguments) {
 
     ReferenceReader reader = ReferenceReader(arguments->getReferenceFilePath(), arguments->getK());
-    ModelGenerator copyModelGenerator = ModelGenerator(&reader, arguments->getOutputModelPath());
-
-//    if (copyModelGenerator.isCached()) {
-//        std::cout << "[!] Loading cached model" << std::endl;
-//        copyModelGenerator.load();
-//    } else {
-//        std::cout << "[!] Generating model" << std::endl;
-//        copyModelGenerator.run();
-//        copyModelGenerator.save();
-//    }
+    ModelGenerator copyModelGenerator = ModelGenerator(&reader);
 
     std::cout << "[!] Generating model" << std::endl;
     copyModelGenerator.run();
@@ -73,12 +64,6 @@ FileInfoReader obtainFileInfo(LangInputArguments* arguments) {
 
     fileInfoReader.openFile();
     fileInfoReader.obtainMetrics();
-
-    std::cout << "Alphabet is" << std::endl;
-    for (auto const& x : fileInfoReader.getAlphabet()) {
-        std::cout << x << std::endl;
-    }
-
     fileInfoReader.closeFile();
 
     return fileInfoReader;
@@ -106,6 +91,8 @@ CopyModelOutput runCopyModel(LangInputArguments* arguments, FileInfoReader* file
     copyModelReader->closeFile();
     randomAccessReader->closeFile();
 
+    std::cout << "[!] Finished Copy Model Execution" << std::endl;
+
     return copyModelExecutor.generateOutput();
 
 }
@@ -123,7 +110,6 @@ void storeCopyModelOutput(LangInputArguments* arguments, CopyModelOutput* output
 
 void printCopyModelOutput(CopyModelOutput* output) {
 
-    std::cout << "[!] Finished Copy Model Execution" << std::endl;
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" << std::endl;
     std::cout << "Results: " << std::endl;
     std::cout << std::endl;

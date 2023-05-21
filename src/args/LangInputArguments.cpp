@@ -35,11 +35,6 @@ bool LangInputArguments::checkArguments() const {
         return false;
     }
 
-    if (this->outputModelPath.empty()) {
-        std::cerr << "[!!!] The output model path was not provided." << std::endl;
-        return false;
-    }
-
     return true;
 }
 
@@ -89,8 +84,6 @@ void LangInputArguments::parseArguments(int argc, char **argv) {
             this->targetFilePath = argv[i + 1];
         } else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0) {
             this->outputFilePath = argv[i + 1];
-        } else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--model") == 0) {
-            this->outputModelPath = argv[i + 1];
         }
     }
 }
@@ -117,10 +110,6 @@ int LangInputArguments::getK() const {
 
 double LangInputArguments::getThreshold() const {
     return this->threshold;
-}
-
-std::string LangInputArguments::getOutputModelPath() {
-    return this->outputModelPath;
 }
 
 bool LangInputArguments::getUseFiniteContext() const {
