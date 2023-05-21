@@ -27,7 +27,7 @@ public:
     CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, RandomAccessReader* randomReader,
                                GeneratedModel* generatedModel);
 
-    void run(double alpha, double threshold);
+    void run(double alpha, double threshold, bool useFiniteContext);
 
     [[nodiscard]] CopyModelOutput generateOutput();
 

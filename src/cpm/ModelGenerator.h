@@ -43,10 +43,16 @@ public:
     void load();
 
     /**
-     * Returns the generated model
+     * Returns the positional model
      * @return the generated model
      */
-    std::map<std::string, std::vector<int>> getModel();
+    std::map<std::string, std::vector<int>> getPositionalModel();
+
+    /**
+     * Returns the finite context model
+     * @return the finite context model
+     */
+    std::map<std::string, std::map<std::string, int>> getFiniteContextModel();
 
 private:
 

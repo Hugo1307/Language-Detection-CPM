@@ -50,16 +50,20 @@ GeneratedModel obtainModel(LangInputArguments* arguments) {
     ReferenceReader reader = ReferenceReader(arguments->getReferenceFilePath(), arguments->getK());
     ModelGenerator copyModelGenerator = ModelGenerator(&reader, arguments->getOutputModelPath());
 
-    if (copyModelGenerator.isCached()) {
-        std::cout << "[!] Loading cached model" << std::endl;
-        copyModelGenerator.load();
-    } else {
-        std::cout << "[!] Generating model" << std::endl;
-        copyModelGenerator.run();
-        copyModelGenerator.save();
-    }
+//    if (copyModelGenerator.isCached()) {
+//        std::cout << "[!] Loading cached model" << std::endl;
+//        copyModelGenerator.load();
+//    } else {
+//        std::cout << "[!] Generating model" << std::endl;
+//        copyModelGenerator.run();
+//        copyModelGenerator.save();
+//    }
 
-    return {arguments->getReferenceFilePath(), copyModelGenerator.getModel()};
+    std::cout << "[!] Generating model" << std::endl;
+    copyModelGenerator.run();
+
+    return {arguments->getReferenceFilePath(), copyModelGenerator.getPositionalModel(),
+            copyModelGenerator.getFiniteContextModel()};
 
 }
 
@@ -69,6 +73,12 @@ FileInfoReader obtainFileInfo(LangInputArguments* arguments) {
 
     fileInfoReader.openFile();
     fileInfoReader.obtainMetrics();
+
+    std::cout << "Alphabet is" << std::endl;
+    for (auto const& x : fileInfoReader.getAlphabet()) {
+        std::cout << x << std::endl;
+    }
+
     fileInfoReader.closeFile();
 
     return fileInfoReader;
@@ -87,8 +97,11 @@ CopyModelOutput runCopyModel(LangInputArguments* arguments, FileInfoReader* file
     CopyModelExecutor copyModelExecutor = CopyModelExecutor(copyModelReader, fileInfoReader,
                                                             randomAccessReader, model);
 
+    std::cout << "[!] Running Copy Model" << std::endl;
+
     // Run the Copy Model on the target using the Model trained for the reference
-    copyModelExecutor.run(arguments->getAlpha(), arguments->getThreshold());
+    copyModelExecutor.run(arguments->getAlpha(), arguments->getThreshold(),
+                          arguments->getUseFiniteContext());
 
     copyModelReader->closeFile();
     randomAccessReader->closeFile();

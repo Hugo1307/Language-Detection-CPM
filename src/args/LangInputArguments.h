@@ -21,6 +21,8 @@ private:
     // inputFilePath -> Same as referenceFilePath
     std::string outputModelPath{};
 
+    bool useFiniteContext = true;
+
 public:
 
     LangInputArguments();
@@ -33,6 +35,7 @@ public:
     [[nodiscard]] int getK() const;
     [[nodiscard]] double getThreshold() const;
     std::string getOutputModelPath();
+    bool getUseFiniteContext() const;
 
     void parseArguments(int argc, char *argv[]);
 

@@ -114,7 +114,11 @@ void ModelGenerator::load() {
 
 }
 
-std::map<std::string, std::vector<int>> ModelGenerator::getModel() {
+std::map<std::string, std::vector<int>> ModelGenerator::getPositionalModel() {
     return this->sequencePositions;
+}
+
+std::map<std::string, std::map<std::string, int>> ModelGenerator::getFiniteContextModel() {
+    return this->finiteContextCounts;
 }
 

@@ -53,6 +53,7 @@ void LangInputArguments::printUsage() {
     std::cout << "-a \t Alpha" << std::endl;
     std::cout << "-k \t Window size" << std::endl;
     std::cout << "-t \t Threshold" << std::endl;
+    std::cout << "-nFC \t Disable finite context for Non-Hit Symbols" << std::endl;
     std::cout << "-h \t Print this help message" << std::endl;
 }
 
@@ -69,6 +70,8 @@ void LangInputArguments::parseArguments(int argc, char **argv) {
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             LangInputArguments::printUsage();
             exit(EXIT_SUCCESS);
+        } else if (strcmp(argv[i], "-nFC") == 0 || strcmp(argv[i], "--noFiniteContext") == 0) {
+            this->useFiniteContext = false;
         }
     }
 
@@ -118,4 +121,8 @@ double LangInputArguments::getThreshold() const {
 
 std::string LangInputArguments::getOutputModelPath() {
     return this->outputModelPath;
+}
+
+bool LangInputArguments::getUseFiniteContext() const {
+    return this->useFiniteContext;
 }
