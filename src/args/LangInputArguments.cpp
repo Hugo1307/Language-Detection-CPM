@@ -35,11 +35,6 @@ bool LangInputArguments::checkArguments() const {
         return false;
     }
 
-    if (this->outputModelPath.empty()) {
-        std::cerr << "[!!!] The output model path was not provided." << std::endl;
-        return false;
-    }
-
     return true;
 }
 
@@ -53,6 +48,7 @@ void LangInputArguments::printUsage() {
     std::cout << "-a \t Alpha" << std::endl;
     std::cout << "-k \t Window size" << std::endl;
     std::cout << "-t \t Threshold" << std::endl;
+    std::cout << "-nFC \t Disable finite context for Non-Hit Symbols" << std::endl;
     std::cout << "-h \t Print this help message" << std::endl;
 }
 
@@ -69,6 +65,8 @@ void LangInputArguments::parseArguments(int argc, char **argv) {
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             LangInputArguments::printUsage();
             exit(EXIT_SUCCESS);
+        } else if (strcmp(argv[i], "-nFC") == 0 || strcmp(argv[i], "--noFiniteContext") == 0) {
+            this->useFiniteContext = false;
         }
     }
 
@@ -86,8 +84,6 @@ void LangInputArguments::parseArguments(int argc, char **argv) {
             this->targetFilePath = argv[i + 1];
         } else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0) {
             this->outputFilePath = argv[i + 1];
-        } else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--model") == 0) {
-            this->outputModelPath = argv[i + 1];
         }
     }
 }
@@ -116,6 +112,6 @@ double LangInputArguments::getThreshold() const {
     return this->threshold;
 }
 
-std::string LangInputArguments::getOutputModelPath() {
-    return this->outputModelPath;
+bool LangInputArguments::getUseFiniteContext() const {
+    return this->useFiniteContext;
 }

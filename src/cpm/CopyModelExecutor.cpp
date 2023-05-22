@@ -17,19 +17,20 @@ CopyModelExecutor::CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fi
 
 }
 
-void CopyModelExecutor::run(double alpha, double threshold) {
+void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContext) {
 
     CopyModelReader* fileReader = this->copyModelReader;
-    std::map<std::string, std::vector<int>> model = this->generatedModel->getModel();
+    std::map<std::string, std::vector<int>> positionalModel = this->generatedModel->getPositionalModel();
+    std::map<std::string, std::map<std::string, int>> finiteContextModel = this->generatedModel->getFiniteContextModel();
 
     while (fileReader->readWindow()) {
 
         std::string sequenceAsString = convertVectorToString(fileReader->getCurrentWindow());
 
-        // If the sequence exists in the model
-        if (model.count(sequenceAsString) > 0 && model[sequenceAsString][0] < fileReader->getCurrentPosition() - 1) {
+        // If the sequence exists in the positional Model
+        if (positionalModel.count(sequenceAsString) > 0) {
 
-            // std::cout << "Exists in model: "  << sequenceAsString << std::endl;
+            // std::cout << "Exists in Positional Model: "  << sequenceAsString << std::endl;
 
             int currentPointerIndex = 0;
 
@@ -40,7 +41,7 @@ void CopyModelExecutor::run(double alpha, double threshold) {
                 currentPointerIndex = currentPointerIndexForSequence[sequenceAsString];
             }
 
-            int pastSequencePosition = model[sequenceAsString][currentPointerIndex];
+            int pastSequencePosition = positionalModel[sequenceAsString][currentPointerIndex];
 
             // The probability P (probability of the next character being equal to the one I'm seeing now in the
             // current copy model)
@@ -83,7 +84,26 @@ void CopyModelExecutor::run(double alpha, double threshold) {
 
                     hitsMissesInfo.incrementMisses();
 
-                    double probabilityOfFail = complementaryProbability / (int) (fileInfoReader->getAlphabet().size()-1);
+                    // Calculate probability of fail a.k.a. non-hit using Finite Context Model
+                    std::string lastCharacterAsString = getLastCharacterInString(sequenceAsString);
+                    std::string contextAsString = getAllButLastCharacterInString(sequenceAsString);
+
+                    // Equals to N(e|c)
+                    double countOfCharWithContext = finiteContextModel[lastCharacterAsString][contextAsString];
+                    // Equals to Sum(N(s|c))
+                    double countOfAlphabetWithContext = 0;
+
+                    for (const auto& alphabetChar : fileInfoReader->getAlphabet()) {
+                        countOfAlphabetWithContext += (finiteContextModel[alphabetChar][contextAsString] + alpha * (int)fileInfoReader->getAlphabet().size());
+                    }
+
+                    double probabilityOfFail;
+
+                    if (useFiniteContext) {
+                        probabilityOfFail = (countOfCharWithContext + alpha) / countOfAlphabetWithContext;
+                    } else {
+                        probabilityOfFail = complementaryProbability / (int) (fileInfoReader->getAlphabet().size()-1);
+                    }
 
                     // The total information is the sum of the information of each character at that point taking into
                     // account the probability of the character being correct
@@ -101,7 +121,7 @@ void CopyModelExecutor::run(double alpha, double threshold) {
 
             }
 
-            if (probabilityOfCorrectPrediction < threshold && model[sequenceAsString].size() > 1) {
+            if (probabilityOfCorrectPrediction < threshold && positionalModel[sequenceAsString].size() > 1) {
                 // Change the pointer to the next one
                 currentPointerIndexForSequence[sequenceAsString] += 1;
             }

@@ -14,12 +14,11 @@ private:
     std::string outputFilePath{};
 
     // Copy Model
-
     double alpha = 0.5;
     int k = 3;
     double threshold = 0.4;
-    // inputFilePath -> Same as referenceFilePath
-    std::string outputModelPath{};
+
+    bool useFiniteContext = true;
 
 public:
 
@@ -32,7 +31,7 @@ public:
     [[nodiscard]] double getAlpha() const;
     [[nodiscard]] int getK() const;
     [[nodiscard]] double getThreshold() const;
-    std::string getOutputModelPath();
+    [[nodiscard]] bool getUseFiniteContext() const;
 
     void parseArguments(int argc, char *argv[]);
 

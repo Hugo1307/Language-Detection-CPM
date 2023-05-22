@@ -11,19 +11,12 @@
 class ModelGenerator {
 
     ReferenceReader* referenceReader;
-    std::string outputPath; // Path for the directory where the generated models will be stored
     std::map<std::string, std::vector<int>> sequencePositions;
     std::map<std::string, std::map<std::string, int>> finiteContextCounts;
 
 public:
 
-    explicit ModelGenerator(ReferenceReader* referenceReader, std::string outputPath);
-
-    /**
-     * Check if we already have a cached model for the current reference file
-     * @return true if we have a stored model, false otherwise
-     */
-    bool isCached();
+    explicit ModelGenerator(ReferenceReader* referenceReader);
 
     /**
      * Run the Model Generator
@@ -33,29 +26,16 @@ public:
     void run();
 
     /**
-     * Saves the generated model in the output path
-     */
-    void save();
-
-    /**
-     * Loads the cached model
-     */
-    void load();
-
-    /**
-     * Returns the generated model
+     * Returns the positional model
      * @return the generated model
      */
-    std::map<std::string, std::vector<int>> getModel();
-
-private:
+    std::map<std::string, std::vector<int>> getPositionalModel();
 
     /**
-     * Builds the path for the model output file
-     *
-     * @return the path for the model output file
+     * Returns the finite context model
+     * @return the finite context model
      */
-    std::string obtainModelOutputPath();
+    std::map<std::string, std::map<std::string, int>> getFiniteContextModel();
 
 };
 

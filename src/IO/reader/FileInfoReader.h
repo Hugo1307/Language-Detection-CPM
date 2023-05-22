@@ -11,7 +11,7 @@
 // TODO: Change this to be capable of reading the file and retrieving the necessary metrics
 class FileInfoReader : public Reader {
 
-    std::set<char> alphabet;
+    std::set<std::string> alphabet;
     int size{};
 
     public:
@@ -20,7 +20,7 @@ class FileInfoReader : public Reader {
 
         void obtainMetrics();
 
-        std::set<char> getAlphabet();
+        std::set<std::string> getAlphabet();
         [[nodiscard]] int getSize() const;
 
 };

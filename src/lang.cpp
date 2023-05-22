@@ -48,18 +48,13 @@ int main(int argc, char **argv) {
 GeneratedModel obtainModel(LangInputArguments* arguments) {
 
     ReferenceReader reader = ReferenceReader(arguments->getReferenceFilePath(), arguments->getK());
-    ModelGenerator copyModelGenerator = ModelGenerator(&reader, arguments->getOutputModelPath());
+    ModelGenerator copyModelGenerator = ModelGenerator(&reader);
 
-    if (copyModelGenerator.isCached()) {
-        std::cout << "[!] Loading cached model" << std::endl;
-        copyModelGenerator.load();
-    } else {
-        std::cout << "[!] Generating model" << std::endl;
-        copyModelGenerator.run();
-        copyModelGenerator.save();
-    }
+    std::cout << "[!] Generating model" << std::endl;
+    copyModelGenerator.run();
 
-    return {arguments->getReferenceFilePath(), copyModelGenerator.getModel()};
+    return {arguments->getReferenceFilePath(), copyModelGenerator.getPositionalModel(),
+            copyModelGenerator.getFiniteContextModel()};
 
 }
 
@@ -87,11 +82,16 @@ CopyModelOutput runCopyModel(LangInputArguments* arguments, FileInfoReader* file
     CopyModelExecutor copyModelExecutor = CopyModelExecutor(copyModelReader, fileInfoReader,
                                                             randomAccessReader, model);
 
+    std::cout << "[!] Running Copy Model" << std::endl;
+
     // Run the Copy Model on the target using the Model trained for the reference
-    copyModelExecutor.run(arguments->getAlpha(), arguments->getThreshold());
+    copyModelExecutor.run(arguments->getAlpha(), arguments->getThreshold(),
+                          arguments->getUseFiniteContext());
 
     copyModelReader->closeFile();
     randomAccessReader->closeFile();
+
+    std::cout << "[!] Finished Copy Model Execution" << std::endl;
 
     return copyModelExecutor.generateOutput();
 
@@ -110,7 +110,6 @@ void storeCopyModelOutput(LangInputArguments* arguments, CopyModelOutput* output
 
 void printCopyModelOutput(CopyModelOutput* output) {
 
-    std::cout << "[!] Finished Copy Model Execution" << std::endl;
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" << std::endl;
     std::cout << "Results: " << std::endl;
     std::cout << std::endl;
