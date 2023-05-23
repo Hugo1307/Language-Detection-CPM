@@ -6,7 +6,7 @@
 #include <vector>
 #include "../IO/reader/CopyModelReader.h"
 #include "../IO/reader/FileInfoReader.h"
-#include "../IO/reader/RandomAccessReader.h"
+#include "../IO/reader/SequentialReader.h"
 #include "../models/CopyModelOutput.h"
 #include "../models/GeneratedModel.h"
 
@@ -14,7 +14,7 @@ class CopyModelExecutor {
 
     CopyModelReader* copyModelReader;
     FileInfoReader* fileInfoReader;
-    RandomAccessReader* randomAccessReader;
+    SequentialReader* sequentialAccessReader;
     GeneratedModel* generatedModel;
 
     std::map<int, double>* informationPerIteration;
@@ -24,7 +24,7 @@ class CopyModelExecutor {
 
 public:
 
-    CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, RandomAccessReader* randomReader,
+    CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, SequentialReader* sequentialReader,
                                GeneratedModel* generatedModel);
 
     void run(double alpha, double threshold, bool useFiniteContext);

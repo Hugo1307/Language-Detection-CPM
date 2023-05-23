@@ -10,7 +10,7 @@
 class CopyModelReader : public Reader {
 
     int windowSize;
-    std::vector<char> currentWindow;
+    std::vector<std::string> currentWindow;
 
     int currentPosition;    // Position where we are reading currently
     int pastPosition;       // Position in the past that indicates the character we are comparing to our current character
@@ -25,7 +25,7 @@ public:
     // Getters
     [[nodiscard]] int getWindowSize() const;
 
-    std::vector<char> getCurrentWindow();
+    std::vector<std::string> getCurrentWindow();
 
     int getCurrentPosition() const;
     int getPastPosition() const;

@@ -74,13 +74,15 @@ CopyModelOutput runCopyModel(LangInputArguments* arguments, FileInfoReader* file
 
     // Todo: Run the model over the target file
     auto* copyModelReader = new CopyModelReader(arguments->getTargetFilePath(), arguments->getK());
-    auto* randomAccessReader = new RandomAccessReader(arguments->getReferenceFilePath());
+    auto* sequentialAccessReader = new SequentialReader(arguments->getReferenceFilePath());
 
     copyModelReader->openFile();
-    randomAccessReader->openFile();
+    sequentialAccessReader->openFile();
+
+    sequentialAccessReader->readFile();
 
     CopyModelExecutor copyModelExecutor = CopyModelExecutor(copyModelReader, fileInfoReader,
-                                                            randomAccessReader, model);
+                                                            sequentialAccessReader, model);
 
     std::cout << "[!] Running Copy Model" << std::endl;
 
@@ -89,7 +91,7 @@ CopyModelOutput runCopyModel(LangInputArguments* arguments, FileInfoReader* file
                           arguments->getUseFiniteContext());
 
     copyModelReader->closeFile();
-    randomAccessReader->closeFile();
+    sequentialAccessReader->closeFile();
 
     std::cout << "[!] Finished Copy Model Execution" << std::endl;
 

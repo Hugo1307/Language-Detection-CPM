@@ -74,18 +74,10 @@ bool CopyModelReader::expand() {
     // are not working properly, i.e., they usually have the "?" mark at the beginning and at the end.
     // We need to find a way to solve this in the future.
 
-    int characterRead = Reader::getFileInputStream()->get();
-    int numberOfCharactersRead = numOfBytesInUTF8(characterRead);
+    std::string nextCharacter = Reader::readCharacter();
+    this->currentWindow.push_back(nextCharacter);
 
-    // We want to read only characters that are not white lines, i.e., \n, \t, \r, etc.
-    if (!isWhiteLineCharacter(characterRead) && !isForbiddenCharacter(characterRead))
-        this->currentWindow.push_back((char) characterRead);
-    else
-        this->currentWindow.push_back(' ');
-
-    if (numberOfCharactersRead != -1) {
-        this->currentPosition++;
-    }
+    this->currentPosition++;
 
     return true;
 
@@ -103,7 +95,7 @@ int CopyModelReader::getWindowSize() const {
     return this->windowSize;
 }
 
-std::vector<char> CopyModelReader::getCurrentWindow() {
+std::vector<std::string> CopyModelReader::getCurrentWindow() {
     return this->currentWindow;
 }
 

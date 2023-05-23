@@ -19,6 +19,8 @@ public:
     bool isFileOpen() override;
     void closeFile() override;
 
+    std::string readCharacter();
+
     // Getters
     const std::string &getFilePath() const;
 

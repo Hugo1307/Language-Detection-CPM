@@ -12,24 +12,12 @@ void FileInfoReader::obtainMetrics() {
 
     while (!Reader::getFileInputStream()->eof()) {
 
-        unsigned char characterRead = Reader::getFileInputStream()->get();
-        int numberOfBytes = numOfBytesInUTF8(characterRead);
-        std::string characterAsString = std::string();
+        std::string character = Reader::readCharacter();
 
-        characterAsString += (char) characterRead;
-
-        // If we are reading the first byte of a UTF-8 character
-        if (numberOfBytes != -1) {
-            for (int i = 0; i < numberOfBytes - 1; i++) {
-                characterAsString += (char) Reader::getFileInputStream()->get();
-            }
+        if (!character.empty()) {
+            this->alphabet.insert(character);
+            this->size++;
         }
-
-        if (!isWhiteLineCharacter(characterRead) && !isForbiddenCharacter(characterRead)) {
-            this->alphabet.insert(characterAsString);
-        }
-
-        this->size++;
 
     }
 

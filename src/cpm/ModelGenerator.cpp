@@ -14,7 +14,7 @@ void ModelGenerator::run() {
 
     while (reader->next()) {
 
-        std::string sequenceStr = convertUCharArrToString(reader->getCurrentWindow(), reader->getAllocatedWindowSize());
+        std::string sequenceStr = *reader->getCurrentWindow();
 
         std::string lastCharacterOfSequence = getLastCharacterInString(sequenceStr);
         std::string sequenceWithoutLastCharacter = getAllButLastCharacterInString(sequenceStr);

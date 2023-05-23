@@ -11,7 +11,7 @@ class ReferenceReader : public Reader {
 
     int windowSize;
     int allocatedWindowSize;
-    unsigned char* currentWindow;
+    std::string* currentWindow;
     int currentPosition;
 
 public:
@@ -25,7 +25,7 @@ public:
     // Getters
     [[nodiscard]] int getWindowSize() const;
     [[nodiscard]] int getAllocatedWindowSize() const;
-    unsigned char* getCurrentWindow();
+    std::string* getCurrentWindow();
     int getCurrentPosition() const;
 
 };

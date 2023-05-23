@@ -6,13 +6,13 @@
 #include "../utils/utils.h"
 #include "HitsMissesInfo.h"
 
-CopyModelExecutor::CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, RandomAccessReader* randomReader,
+CopyModelExecutor::CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fileInfo, SequentialReader* sequentialReader,
                                      GeneratedModel* generatedModel) {
 
     this->generatedModel = generatedModel;
     this->copyModelReader = reader;
     this->fileInfoReader = fileInfo;
-    this->randomAccessReader = randomReader;
+    this->sequentialAccessReader = sequentialReader;
     this->informationPerIteration = new std::map<int, double>();
 
 }
@@ -25,7 +25,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
 
     while (fileReader->readWindow()) {
 
-        std::string sequenceAsString = convertVectorToString(fileReader->getCurrentWindow());
+        std::string sequenceAsString = convertStringVectorToString(fileReader->getCurrentWindow());
 
         // If the sequence exists in the positional Model
         if (positionalModel.count(sequenceAsString) > 0) {
@@ -41,6 +41,8 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                 currentPointerIndex = currentPointerIndexForSequence[sequenceAsString];
             }
 
+            // std::cout << "DEBUG 0" << std::endl;
+
             int pastSequencePosition = positionalModel[sequenceAsString][currentPointerIndex];
 
             // The probability P (probability of the next character being equal to the one I'm seeing now in the
@@ -52,11 +54,18 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
 
             int expandedCharacters = 0;
 
+            // std::cout << "DEBUG 1" << std::endl;
+
             while (fileReader->expand()) {
 
+                // std::cout << "DEBUG 1.5" << std::endl;
+
                 // int pastSequenceOffset = (int)fileReader.getCurrentSequence()->size() - (fileReader.getWindowSize()-1);
-                char predictedChar = randomAccessReader->getCharAt(pastSequencePosition + expandedCharacters++);
-                char nextCharacterInSequence = fileReader->getCurrentWindow()[fileReader->getCurrentWindow().size()-1];
+                std::string predictedChar = sequentialAccessReader->getCharacterAt(pastSequencePosition + expandedCharacters++);
+                // std::cout << "DEBUG 1.6" << std::endl;
+                std::string nextCharacterInSequence = getLastCharacterInString(convertStringVectorToString(fileReader->getCurrentWindow()));
+
+                // std::cout << "DEBUG 2" << std::endl;
 
                 // Calculate the probability P (a.k.a. probability of Hit)
                 probabilityOfCorrectPrediction = calculateHitProbability(hitsMissesInfo.getHits(),
@@ -75,7 +84,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                     // account the probability of the character being correct
                     double currentInformation = -std::log2(probabilityOfCorrectPrediction);
 
-                    std::cout << "Current Information (on Hit " << convertVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
+                    std::cout << "Current Information (on Hit " << convertStringVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
                     std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
                     informationAmount += currentInformation;
@@ -110,7 +119,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                     // account the probability of the character being correct
                     double currentInformation = -std::log2(probabilityOfFail);
 
-                    std::cout << "Current Information (on Fail " << convertVectorToString(fileReader->getCurrentWindow()) << " expecting " << predictedChar <<  "): " << currentInformation << std::endl;
+                    std::cout << "Current Information (on Fail " << convertStringVectorToString(fileReader->getCurrentWindow()) << " expecting " << predictedChar <<  "): " << currentInformation << std::endl;
                     std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
                     informationAmount += currentInformation;

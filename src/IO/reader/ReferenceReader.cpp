@@ -5,7 +5,7 @@
 ReferenceReader::ReferenceReader(std::string filePath, int windowSize) : Reader(std::move(filePath)) {
     this->windowSize = windowSize;
     this->allocatedWindowSize = windowSize;
-    this->currentWindow = static_cast<unsigned char*>(calloc(allocatedWindowSize, sizeof(char)));
+    this->currentWindow = new std::string();
     this->currentPosition = 0;
 }
 
@@ -14,11 +14,9 @@ bool ReferenceReader::next() {
     if (!Reader::getFileInputStream()->is_open())
         return false;
 
-    // Reset Allocated Window Size
-    // It needs to be in the start of the function!!
-    this->allocatedWindowSize = this->windowSize;
+    this->currentWindow->clear();
 
-    for (int i = 0; i < this->allocatedWindowSize; i++) {
+    for (int i = 0; i < this->windowSize; i++) {
 
         if (Reader::getFileInputStream()->eof())
             return false;
@@ -26,27 +24,13 @@ bool ReferenceReader::next() {
         if (Reader::getFileInputStream()->fail())
             return false;
 
-        unsigned char characterRead = Reader::getFileInputStream()->get();
-        int numberOfBytes = numOfBytesInUTF8(characterRead);
-
-        // If we are reading the first byte of a UTF-8 character
-        if (numberOfBytes != -1) {
-
-            int newCharacters = numberOfBytes - 1;
-
-            // We will expand the window to accommodate the bytes that belong to the current character
-            this->allocatedWindowSize += newCharacters;
-            this->currentWindow = (unsigned char*) realloc(this->currentWindow, this->allocatedWindowSize);
-
-        }
-
-        // We want to read only characters that are not white lines, i.e., \n, \t, \r, etc.
-        if (!isWhiteLineCharacter(characterRead) && !isForbiddenCharacter(characterRead))
-            this->currentWindow[i] = (char) characterRead;
-
-        this->currentPosition++;
+        std::string character = Reader::readCharacter();
+        this->currentWindow->append(character);
 
     }
+
+    // std::cout << "Current Position: " << this->currentPosition << std::endl;
+    this->currentPosition += this->windowSize;
 
     return true;
 
@@ -56,7 +40,7 @@ int ReferenceReader::getWindowSize() const {
     return this->windowSize;
 }
 
-unsigned char* ReferenceReader::getCurrentWindow() {
+std::string* ReferenceReader::getCurrentWindow() {
     return this->currentWindow;
 }
 

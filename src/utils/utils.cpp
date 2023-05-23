@@ -27,6 +27,17 @@ std::string convertVectorToString(const std::vector<char>& vector) {
 
 }
 
+std::string convertStringVectorToString(const std::vector<std::string>& vector) {
+
+    std::string generatedString;
+
+    for (const std::string& i : vector)
+        generatedString += i;
+
+    return generatedString;
+
+}
+
 bool isWhiteLineCharacter(int character) {
 
     switch (character) {

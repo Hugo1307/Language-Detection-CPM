@@ -10,6 +10,8 @@ std::string convertUCharArrToString(unsigned char* charArr, int size);
 
 std::string convertVectorToString(const std::vector<char>& vector);
 
+std::string convertStringVectorToString(const std::vector<std::string>& vector);
+
 bool isWhiteLineCharacter(int character);
 
 bool isForbiddenCharacter(int character);

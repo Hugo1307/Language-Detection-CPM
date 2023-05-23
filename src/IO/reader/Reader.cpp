@@ -1,4 +1,5 @@
 #include "Reader.h"
+#include "../../utils/utils.h"
 
 #include <iostream>
 
@@ -30,4 +31,30 @@ const std::string &Reader::getFilePath() const {
 
 std::ifstream* Reader::getFileInputStream() {
     return &fileInputStream;
+}
+
+std::string Reader::readCharacter() {
+
+    unsigned char byteRead = this->fileInputStream.get();
+    int numberOfBytesForCharacter = numOfBytesInUTF8(byteRead);
+    std::string characterStr;
+
+    if (numberOfBytesForCharacter != -1) {
+
+        if (isWhiteLineCharacter(byteRead) || isForbiddenCharacter(byteRead)) {
+            return "";
+        }
+
+        characterStr += (char) byteRead;
+
+        for (int byteIdx = 1; byteIdx < numberOfBytesForCharacter; byteIdx++) {
+            characterStr += (char ) this->fileInputStream.get();
+        }
+
+    } else {
+        characterStr = "";
+    }
+
+    return characterStr;
+
 }
