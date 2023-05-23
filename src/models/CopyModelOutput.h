@@ -2,7 +2,7 @@
 #define SRC_COPYMODELOUTPUT_H
 
 #include <string>
-#include <vector>
+#include <map>
 
 #include "../IO/writer/Writer.h"
 
@@ -12,12 +12,12 @@ class CopyModelOutput {
     std::string targetPath;
     double totalInformationAmount;
     double informationPerSymbol;
-    std::vector<double>* informationPerIteration;
+    std::map<int, double>* informationPerIteration;
 
 public:
 
     CopyModelOutput(std::string referencePath, std::string targetPath, double totalInformationAmount,
-                    double informationPerSymbol, std::vector<double>* informationPerIteration);
+                    double informationPerSymbol, std::map<int, double>* informationPerIteration);
 
     [[nodiscard]] const std::string &getReferencePath() const;
 
@@ -27,7 +27,7 @@ public:
 
     [[nodiscard]] double getInformationPerSymbol() const;
 
-    [[nodiscard]] std::vector<double>* getInformationPerIteration();
+    [[nodiscard]] std::map<int, double>* getInformationPerIteration();
 
     void presentInformationPerIteration(bool truncated);
 

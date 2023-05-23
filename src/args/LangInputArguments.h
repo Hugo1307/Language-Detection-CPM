@@ -16,7 +16,7 @@ private:
     // Copy Model
     double alpha = 0.5;
     int k = 3;
-    double threshold = 0.4;
+    double threshold = 0.5;
 
     bool useFiniteContext = true;
 

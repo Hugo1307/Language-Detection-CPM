@@ -13,7 +13,7 @@ CopyModelExecutor::CopyModelExecutor(CopyModelReader* reader, FileInfoReader* fi
     this->copyModelReader = reader;
     this->fileInfoReader = fileInfo;
     this->randomAccessReader = randomReader;
-    this->informationPerIteration = new std::vector<double>();
+    this->informationPerIteration = new std::map<int, double>();
 
 }
 
@@ -30,7 +30,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
         // If the sequence exists in the positional Model
         if (positionalModel.count(sequenceAsString) > 0) {
 
-            // std::cout << "Exists in Positional Model: "  << sequenceAsString << std::endl;
+            std::cout << "Exists in Positional Model: "  << sequenceAsString << std::endl;
 
             int currentPointerIndex = 0;
 
@@ -75,10 +75,11 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                     // account the probability of the character being correct
                     double currentInformation = -std::log2(probabilityOfCorrectPrediction);
 
-                    // std::cout << "Current Information (on Hit " << convertVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
+                    std::cout << "Current Information (on Hit " << convertVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
+                    std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
                     informationAmount += currentInformation;
-                    informationPerIteration->push_back(currentInformation);
+                    informationPerIteration->insert({fileReader->getCurrentPosition(), currentInformation});
 
                 } else { // Otherwise, next character in sequence != of character in copy model, we have a miss
 
@@ -94,13 +95,13 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                     double countOfAlphabetWithContext = 0;
 
                     for (const auto& alphabetChar : fileInfoReader->getAlphabet()) {
-                        countOfAlphabetWithContext += (finiteContextModel[alphabetChar][contextAsString] + alpha * (int)fileInfoReader->getAlphabet().size());
+                        countOfAlphabetWithContext += finiteContextModel[alphabetChar][contextAsString];
                     }
 
                     double probabilityOfFail;
 
                     if (useFiniteContext) {
-                        probabilityOfFail = (countOfCharWithContext + alpha) / countOfAlphabetWithContext;
+                        probabilityOfFail = (countOfCharWithContext + alpha) / (countOfAlphabetWithContext + alpha * (int)fileInfoReader->getAlphabet().size());
                     } else {
                         probabilityOfFail = complementaryProbability / (int) (fileInfoReader->getAlphabet().size()-1);
                     }
@@ -109,10 +110,11 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                     // account the probability of the character being correct
                     double currentInformation = -std::log2(probabilityOfFail);
 
-                    // std::cout << "Current Information (on Fail " << convertVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
+                    std::cout << "Current Information (on Fail " << convertVectorToString(fileReader->getCurrentWindow()) << " expecting " << predictedChar <<  "): " << currentInformation << std::endl;
+                    std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
                     informationAmount += currentInformation;
-                    informationPerIteration->push_back(currentInformation);
+                    informationPerIteration->insert({fileReader->getCurrentPosition(), currentInformation});
 
                 }
 
@@ -132,10 +134,11 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
             // calculate the information and add it to the total amount of information
             double currentInformation = -std::log2(1.0 / (int)fileInfoReader->getAlphabet().size());
 
-            // std::cout << "Current Information (on Not Found " << sequenceAsString << "): " << currentInformation << std::endl;
+            std::cout << "Current Information (on Not Found " << sequenceAsString << " Size " << sequenceAsString.size() << "): " << currentInformation << std::endl;
+            std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
             informationAmount += currentInformation;
-            informationPerIteration->push_back(currentInformation);
+            informationPerIteration->insert({fileReader->getCurrentPosition(), currentInformation});
 
         }
 
@@ -151,7 +154,7 @@ double CopyModelExecutor::getInformationPerSymbol() const {
     return informationAmount / fileInfoReader->getSize();
 }
 
-std::vector<double>* CopyModelExecutor::getInformationPerIteration() {
+std::map<int, double>* CopyModelExecutor::getInformationPerIteration() {
     return informationPerIteration;
 }
 

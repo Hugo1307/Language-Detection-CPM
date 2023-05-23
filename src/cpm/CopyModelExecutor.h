@@ -17,7 +17,7 @@ class CopyModelExecutor {
     RandomAccessReader* randomAccessReader;
     GeneratedModel* generatedModel;
 
-    std::vector<double>* informationPerIteration;
+    std::map<int, double>* informationPerIteration;
     std::map<std::string, int> currentPointerIndexForSequence;
 
     double informationAmount = 0;
@@ -33,7 +33,7 @@ public:
 
     [[nodiscard]] double getInformationAmount() const;
     [[nodiscard]] double getInformationPerSymbol() const;
-    [[nodiscard]] std::vector<double>* getInformationPerIteration();
+    [[nodiscard]] std::map<int, double>* getInformationPerIteration();
 
 };
 

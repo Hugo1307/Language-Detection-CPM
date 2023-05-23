@@ -75,6 +75,7 @@ bool CopyModelReader::expand() {
     // We need to find a way to solve this in the future.
 
     int characterRead = Reader::getFileInputStream()->get();
+    int numberOfCharactersRead = numOfBytesInUTF8(characterRead);
 
     // We want to read only characters that are not white lines, i.e., \n, \t, \r, etc.
     if (!isWhiteLineCharacter(characterRead) && !isForbiddenCharacter(characterRead))
@@ -82,7 +83,9 @@ bool CopyModelReader::expand() {
     else
         this->currentWindow.push_back(' ');
 
-    this->currentPosition++;
+    if (numberOfCharactersRead != -1) {
+        this->currentPosition++;
+    }
 
     return true;
 
