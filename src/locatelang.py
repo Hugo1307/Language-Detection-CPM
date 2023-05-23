@@ -1,3 +1,4 @@
+from math import ceil
 from os import scandir
 from os.path import join
 import subprocess
@@ -36,6 +37,7 @@ def main():
     information_per_file = {}
 
     with scandir(input_arguments.references_directory) as entries:
+
         for entry in entries:  
             
             print(f'Testing Language: {remove_file_extension(entry.name).upper()}     ', end='\r')
@@ -45,6 +47,9 @@ def main():
             # if not os.path.exists(output_path):
             #    execute_lang(input_arguments.executable, entry, target_file_path, output_path)
 
+            if os.path.exists(output_path):
+                os.remove(output_path)
+
             execute_lang(input_arguments.executable, entry, target_file_path, output_path)
 
             with open(output_path, 'r') as outputFile:
@@ -52,11 +57,13 @@ def main():
                 lines = outputFile.readlines()
                 information_per_file[entry.name] = read_information(lines)
 
-    results = identify_language_window(information_per_file, 15)
 
-    if results:
-        for result in results:
+    history = identify_language(information_per_file, input_arguments.window_size, input_arguments.optimization)
+
+    if history:
+        for result in history:
             print(f'Language {result[0]} at index {result[2]} - Weight: {result[1]}')
+
 
     # Evaluate model if it is not in interactive mode
     if not input_arguments.interactive_mode:
@@ -65,7 +72,7 @@ def main():
         target_dir_name = os.path.dirname(input_arguments.target_file_path)
 
         expected_results = obtain_expected_results(join(join(target_dir_name, 'results'), target_file_name))
-        obtained_results = obtain_results(results)
+        obtained_results = obtain_results(history)
         
         evaluate_model(expected_results, obtained_results)
 
@@ -97,65 +104,9 @@ def read_information(file_lines: list[str]) -> list[float]:
         information_list.append(( int(line_splited[0]), float(line_splited[1]), ))
 
     return information_list
+     
 
-
-def identify_language(information_data: dict, sensibility: float):
-
-    threshold = 1
-
-    # Identify language with most information
-    max_information = max([len(information_data[language]) for language in information_data])
-
-    current_language = None
-    languages_hits = {}
-
-    for idx in range(max_information):
-
-        min_info = float('inf')
-        language_with_min = None
-
-        for language in information_data:
-            if len(information_data[language]) > idx:
-                if information_data[language][idx][1] < threshold:
-                    min_info = information_data[language][idx]
-                    language_with_min = language
-
-        if language_with_min is None:
-            continue
-
-        if current_language is None:
-            current_language = language_with_min
-            print(f"Current Language is {current_language}")
-
-        # Count hits for each language
-        if language_with_min in languages_hits:
-            
-            if languages_hits[language_with_min] <= 30:
-                languages_hits[language_with_min] += 1
-
-            if language_with_min != current_language:
-                # Maybe we can count the hits and misses and apply the probability formula from the first work, i.e., 
-                # as we find more and more misses we will remove more from the current language instead of removing a 
-                # static value
-                languages_hits[current_language] -= sensibility
-
-            # If some language has more hits than the current language, change the language prediction
-            if languages_hits[language_with_min] > languages_hits[current_language]:
-                
-                current_language = language_with_min
-                current_language_hits = languages_hits[current_language]
-
-                languages_hits = {}
-                languages_hits[current_language] = current_language_hits
-
-                print(f'Current Language changed to {language_with_min} with min {min_info} for index {idx}.')
-
-        else:
-            # Initialize Hits Count
-            languages_hits[language_with_min] = 1
-            
-
-def identify_language_window(languages_info: dict, window_size: int):
+def obtain_languages_window(languages_info: dict, window_size: int):
 
     # languages_info_list = {key : list(map(lambda x: x[1], value)) for key, value in language_info.items() }
 
@@ -216,9 +167,8 @@ def identify_language_window(languages_info: dict, window_size: int):
         window_start_idx += int(window_size)
         window_last_idx = window_start_idx + window_size
 
-    print("Languages Counts: ", dict(sorted(languages_counts.items(), key=lambda x: x[1], reverse=True)))
-
-    return languages_detection_history
+    languages_counts = dict(sorted(languages_counts.items(), key=lambda x: x[1], reverse=True))
+    return languages_detection_history, languages_counts
 
 
 #def identify_language_v2(information_data: dict, window_size: float):
@@ -272,13 +222,45 @@ def identify_language_window(languages_info: dict, window_size: int):
     print(dict(sorted(languages_found.items(), key=lambda x: x[1], reverse=True)))
         
 
+def identify_language(information_per_file: str, window_size: int, optimization_cycles: int):
+
+    languages_to_exclude = {}
+
+    if not optimization_cycles: # Not Optimizing
+        print('[!] Not Optimizing')
+        return obtain_languages_window(information_per_file, window_size)[0]
+    else:
+        
+        print('[!] Optimizing')
+        
+        files_info = information_per_file
+
+        for i in range(optimization_cycles):
+            
+            
+            files_info = dict(filter(lambda x: x[0] not in languages_to_exclude, files_info.items()))
+
+            history, languages = obtain_languages_window(files_info, window_size)
+            
+            optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / len(languages.values()) * optimization_cycles)
+
+            languages_to_exclude = set(dict(filter(lambda x: x[1] <= optimization_threshold, languages.items())).keys())
+
+            print(f'[!] Optimization Step {i}: Languages: {languages}')
+            
+            # If not in the last optimization cycle
+            if i < optimization_cycles-1:
+                print(f'[!] Optimization Step {i}: Threshold: {optimization_threshold}')
+                print(f'[!] Optimization Step {i}: Excluding: {languages_to_exclude}')
+
+            if len(languages_to_exclude) == 0:
+                break 
+
+        return history
+
+
 def calc_window_weight(window: list):
-
-    reciprocal_values = [1/val for val in window]
-    reciprocal_values_sum = sum(reciprocal_values)
-    weights = [reciproque_value/reciprocal_values_sum for reciproque_value in reciprocal_values ]
-
-    return sum(value * weight for value, weight in zip(window, weights))
+    return mean(window) if len(window) > 0 else float('inf')
 
 
 def obtain_expected_results(target_results_path: str) -> dict:
@@ -338,6 +320,7 @@ def evaluate_model(expected_results: dict, obtained_results: dict):
 
     print(f"Correct percentage: {round(hits/(hits+misses)*100, 3)}")
 
+
 class InputArguments:
 
     def __init__(self):
@@ -346,8 +329,9 @@ class InputArguments:
         self.target_file_path = None
         self.interactive_mode = False
         self.lang_output_path = None
-        self.lang_models_directory = None
-        self.sensibility = None
+        self.window_size = None
+        self.optimization = None                                                                     
+
 
     def parse_arguments(self, argv):
 
@@ -360,29 +344,31 @@ class InputArguments:
                 self.target_file_path = argv[argv.index(arg) + 1]
             elif arg == '-it' or arg == '--interactive':
                 self.interactive_mode = True
-            elif arg == '-m' or arg == '--model':
-                self.lang_models_directory = argv[argv.index(arg) + 1]
-            elif arg == '-s' or arg == '--sensibility':
-                self.sensibility = float(argv[argv.index(arg) + 1])
+            elif arg == '-O' or arg == '--optimize':
+                self.optimization = int(argv[argv.index(arg) + 1])
+            elif arg == '-w' or arg == '--window':
+                self.window_size = int(argv[argv.index(arg) + 1])
+
 
     def check_arguments(self):
+        
+        if not self.executable:
+            exit('You must provide the Lang executable')
 
         if not self.references_directory:
             exit('You must provide a directory containing Reference files.')
         
+        if not self.window_size:
+            self.window_size = 10
+            print(f'Using default window size: {self.window_size}')
+
+        if self.optimization and 1 > self.optimization > 3:
+            exit('You must an integer value in [1, 3] for Optimization.')
+
         if not self.interactive_mode:
             if not self.target_file_path:
                 exit('You must provide a Target file.')
 
-        if not self.lang_models_directory:
-            self.lang_models_directory = '../models'
-            print('[-] Using default "models" directory...')
-
-         # Sensibility of the model (from 0 to 1): Higher number = more sensible
-        if not self.sensibility:
-            self.sensibility = 0.2
-            print('[-] Using default Sensibility value of 0.2')
 
 if __name__ == "__main__":
-    #evaluate_model('/Users/hugogoncalves/Documents/Faculdade/Mestrado/Semestre_2/TAI/Assignment2/TAI_Group_6/references/target/results/english_polish_czech.txt')
     main()
