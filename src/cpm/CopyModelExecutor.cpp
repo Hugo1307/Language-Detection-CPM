@@ -32,6 +32,10 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
 
             std::cout << "Exists in Positional Model: "  << sequenceAsString << std::endl;
 
+            for (int i = 1; i < fileReader->getWindowSize()-1; i++) {
+                informationPerIteration->insert({fileReader->getCurrentPosition(), calculateHitProbability(0,0, alpha)});
+            }
+
             int currentPointerIndex = 0;
 
             // If I haven't chosen a pointer for this sequence yet, chose the first pointer
@@ -147,6 +151,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
             std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
             informationAmount += currentInformation;
+
             informationPerIteration->insert({fileReader->getCurrentPosition(), currentInformation});
 
         }

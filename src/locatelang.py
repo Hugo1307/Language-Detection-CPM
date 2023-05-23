@@ -59,11 +59,7 @@ def main():
 
 
     history = identify_language(information_per_file, input_arguments.window_size, input_arguments.optimization)
-
-    if history:
-        for result in history:
-            print(f'Language {result[0]} at index {result[2]} - Weight: {result[1]}')
-
+    obtained_results = obtain_results(history)
 
     # Evaluate model if it is not in interactive mode
     if not input_arguments.interactive_mode:
@@ -74,7 +70,12 @@ def main():
         expected_results = obtain_expected_results(join(join(target_dir_name, 'results'), target_file_name))
         obtained_results = obtain_results(history)
         
-        evaluate_model(expected_results, obtained_results)
+        precision = evaluate_model(expected_results, obtained_results)
+
+    with open(target_file_path, 'r') as target_file:
+
+        txt = target_file.read()
+        print_results(txt, obtained_results, precision)
 
 
 def execute_lang(executable_path: str, reference_path: str, target_path: str, output_path: str):
@@ -122,15 +123,14 @@ def obtain_languages_window(languages_info: dict, window_size: int):
 
     languages_counts = {}
 
-    while True:
+    while True: 
         
         # [0]: Lang name, [1]: Lang weight, [2]: Target Index
         locally_detected_language = (None, float('inf'), None)
         finalized_languages = 0
 
         for current_lang in languages_info.keys():
-        # for current_lang in ['polish.txt', 'english.txt', 'czech.txt']:
-            
+        
             current_lang_info_list = list(map(lambda item: item[1], languages_info[current_lang]))
 
             if len(current_lang_info_list) > window_last_idx:
@@ -144,7 +144,6 @@ def obtain_languages_window(languages_info: dict, window_size: int):
                 # Get the index of the character in the target file
                 window_final_target_idx = languages_info[current_lang][min(window_last_idx, len(current_lang_info_list)-1)][0]
                 locally_detected_language = (current_lang, current_lang_window_weight, f'{last_index_registered}-{window_final_target_idx}')
-                
 
         # If we have detected a different language
         if locally_detected_language[0] is not None:
@@ -160,7 +159,6 @@ def obtain_languages_window(languages_info: dict, window_size: int):
 
         # We have analyzed all languages
         if finalized_languages == len(languages_info.keys()):
-        # if finalized_languages == 3:
             break
 
         # Update the Window for Next Iteration
@@ -237,12 +235,12 @@ def identify_language(information_per_file: str, window_size: int, optimization_
 
         for i in range(optimization_cycles):
             
-            
             files_info = dict(filter(lambda x: x[0] not in languages_to_exclude, files_info.items()))
 
             history, languages = obtain_languages_window(files_info, window_size)
             
-            optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / len(languages.values()) * optimization_cycles)
+            # optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / (4-optimization_cycles))
+            optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / len(languages.values()) * optimization_cycles)+1
 
             languages_to_exclude = set(dict(filter(lambda x: x[1] <= optimization_threshold, languages.items())).keys())
 
@@ -260,7 +258,7 @@ def identify_language(information_per_file: str, window_size: int, optimization_
 
 
 def calc_window_weight(window: list):
-    return mean(window) if len(window) > 0 else float('inf')
+    return mean(window) if len(window) > 0 else 0
 
 
 def obtain_expected_results(target_results_path: str) -> dict:
@@ -307,8 +305,8 @@ def evaluate_model(expected_results: dict, obtained_results: dict):
     for idx in expected_results.keys():
 
         if idx not in obtained_results.keys():
-            misses += 1
-            print(f'Added One Miss because idx {idx} was not found in obtained results')
+            # misses += 1
+            # print(f'Added One Miss because idx {idx} was not found in obtained results')
             continue
 
         if expected_results[idx] == obtained_results[idx]:
@@ -318,7 +316,45 @@ def evaluate_model(expected_results: dict, obtained_results: dict):
             # print(f"Miss: Idx {idx}, Expected {expected_results[idx]}, Obtained {obtained_results[idx]}")
             misses += 1
 
-    print(f"Correct percentage: {round(hits/(hits+misses)*100, 3)}")
+    return round(hits/(hits+misses)*100, 2)
+
+
+def print_results(target_text: str, obtained_results: dict, precision: float):
+
+    obtained_languages_list = list(set(obtained_results.values()))
+    available_colors = [Colors.FORE_RED, Colors.FORE_CYAN, Colors.FORE_YELLOW, Colors.FORE_GREEN, Colors.FORE_BLUE, Colors.FORE_MAGENTA,
+                        Colors.FORE_RED_UNDER, Colors.FORE_CYAN_UNDER, Colors.FORE_YELLOW_UNDER, Colors.FORE_GREEN_UNDER, Colors.FORE_BLUE_UNDER, Colors.FORE_MAGENTA_UNDER,
+                        Colors.FORE_RED_ITALIC, Colors.FORE_CYAN_ITALIC, Colors.FORE_YELLOW_ITALIC, Colors.FORE_GREEN_ITALIC, Colors.FORE_BLUE_ITALIC, Colors.FORE_MAGENTA_ITALIC]
+    languages_color_dict = { language : color for language, color in zip(obtained_languages_list, available_colors) }
+
+    last_language = None
+
+    print('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
+    print()
+    print(f'{Colors.BOLD}Results{Colors.RESET}')
+    print()
+    print(f'Precision: {precision}%')
+    print()
+
+    for character_idx in range(len(target_text)):
+
+        if character_idx in obtained_results:
+            character_language = obtained_results[character_idx]
+        else:
+            character_language = last_language
+
+        character_color = languages_color_dict[character_language]
+        last_language = character_language
+
+        print(f'{character_color}{target_text[character_idx]}{Colors.RESET}', end='')
+
+    print(f'\n\n{Colors.BOLD}Legend\n{Colors.RESET}')
+    
+    for language in languages_color_dict:
+        print(f'  {Colors.BOLD}{language}{Colors.RESET}: {languages_color_dict[language]}COLOR{Colors.RESET}')
+
+    print()
+    print('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
 
 
 class InputArguments:
@@ -368,6 +404,39 @@ class InputArguments:
         if not self.interactive_mode:
             if not self.target_file_path:
                 exit('You must provide a Target file.')
+
+
+class Colors:
+
+    RESET = '\033[0m'
+    HEADER = '\033[95m'
+
+    FORE_RED = '\033[31m'
+    FORE_BLUE = '\033[94m'
+    FORE_CYAN = '\033[96m'
+    FORE_GREEN = '\033[92m'
+    FORE_YELLOW = '\033[33m'
+    FORE_MAGENTA = '\033[35m'
+
+    FORE_RED_UNDER = '\033[31;4m'
+    FORE_BLUE_UNDER = '\033[34;4m'
+    FORE_CYAN_UNDER = '\033[36;4m'
+    FORE_GREEN_UNDER = '\033[32;4m'
+    FORE_YELLOW_UNDER = '\033[33;4m'
+    FORE_MAGENTA_UNDER = '\033[35;4m'
+
+    FORE_RED_ITALIC = '\033[31;3m'
+    FORE_BLUE_ITALIC = '\033[34;3m'
+    FORE_CYAN_ITALIC = '\033[36;3m'
+    FORE_GREEN_ITALIC = '\033[32;3m'
+    FORE_YELLOW_ITALIC = '\033[33;3m'
+    FORE_MAGENTA_ITALIC = '\033[35;3m'
+
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
 if __name__ == "__main__":

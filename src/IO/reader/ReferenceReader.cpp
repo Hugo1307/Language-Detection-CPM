@@ -1,4 +1,3 @@
-#include <iostream>
 #include "ReferenceReader.h"
 #include "../../utils/utils.h"
 
