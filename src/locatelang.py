@@ -13,7 +13,9 @@ def main():
     # -r: Directory with the reference files
     # -it: Interactive mode (allows to input text in the terminal and use it as target)
     # -t: Target File 
-    # -s: Sensibility
+    # -w: Window Size
+    # -O: Optimization level (1-3)
+    # -o: Window Overlap (0-1)
 
     input_arguments = InputArguments()
 
@@ -44,9 +46,6 @@ def main():
             
             output_path = f'../output/lang_output_{remove_file_extension(entry.name)}.txt'
 
-            # if not os.path.exists(output_path):
-            #    execute_lang(input_arguments.executable, entry, target_file_path, output_path)
-
             if os.path.exists(output_path):
                 os.remove(output_path)
 
@@ -58,7 +57,7 @@ def main():
                 information_per_file[entry.name] = read_information(lines)
 
 
-    history = identify_language(information_per_file, input_arguments.window_size, input_arguments.optimization)
+    history = identify_language(information_per_file, input_arguments.window_size, input_arguments.optimization, input_arguments.window_overlap)
     obtained_results = obtain_results(history)
 
     # Evaluate model if it is not in interactive mode
@@ -107,7 +106,7 @@ def read_information(file_lines: list[str]) -> list[float]:
     return information_list
      
 
-def obtain_languages_window(languages_info: dict, window_size: int):
+def obtain_languages_window(languages_info: dict, window_size: int, window_overlap: float):
 
     # languages_info_list = {key : list(map(lambda x: x[1], value)) for key, value in language_info.items() }
 
@@ -162,7 +161,7 @@ def obtain_languages_window(languages_info: dict, window_size: int):
             break
 
         # Update the Window for Next Iteration
-        window_start_idx += int(window_size)
+        window_start_idx += int(int(window_size)*window_overlap)
         window_last_idx = window_start_idx + window_size
 
     languages_counts = dict(sorted(languages_counts.items(), key=lambda x: x[1], reverse=True))
@@ -220,13 +219,13 @@ def obtain_languages_window(languages_info: dict, window_size: int):
     print(dict(sorted(languages_found.items(), key=lambda x: x[1], reverse=True)))
         
 
-def identify_language(information_per_file: str, window_size: int, optimization_cycles: int):
+def identify_language(information_per_file: str, window_size: int, optimization_cycles: int, window_overlap: float):
 
     languages_to_exclude = {}
 
     if not optimization_cycles: # Not Optimizing
         print('[!] Not Optimizing')
-        return obtain_languages_window(information_per_file, window_size)[0]
+        return obtain_languages_window(information_per_file, window_size, window_overlap)[0]
     else:
         
         print('[!] Optimizing')
@@ -237,7 +236,7 @@ def identify_language(information_per_file: str, window_size: int, optimization_
             
             files_info = dict(filter(lambda x: x[0] not in languages_to_exclude, files_info.items()))
 
-            history, languages = obtain_languages_window(files_info, window_size)
+            history, languages = obtain_languages_window(files_info, window_size, window_overlap)
             
             # optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / (4-optimization_cycles))
             optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / len(languages.values()) * optimization_cycles)+1
@@ -366,7 +365,8 @@ class InputArguments:
         self.interactive_mode = False
         self.lang_output_path = None
         self.window_size = None
-        self.optimization = None                                                                     
+        self.optimization = None     
+        self.window_overlap = None                                                                
 
 
     def parse_arguments(self, argv):
@@ -384,26 +384,48 @@ class InputArguments:
                 self.optimization = int(argv[argv.index(arg) + 1])
             elif arg == '-w' or arg == '--window':
                 self.window_size = int(argv[argv.index(arg) + 1])
-
-
+            elif arg == '-o' or arg == '--overlap':
+                self.window_overlap = float(1-float(argv[argv.index(arg) + 1]))
+            elif arg == '-h' or arg == '--help':
+                self.print_usage()
+    
     def check_arguments(self):
         
         if not self.executable:
-            exit('You must provide the Lang executable')
+            exit('[!] You must provide the Lang executable')
 
         if not self.references_directory:
-            exit('You must provide a directory containing Reference files.')
+            exit('[!] You must provide a directory containing Reference files.')
         
         if not self.window_size:
             self.window_size = 10
-            print(f'Using default window size: {self.window_size}')
+            print(f'[-] Using default window size: {self.window_size}')
+
+        if self.window_overlap and 0 > self.window_overlap > 1:
+            print('[!] You must specify a value between 0 and 1 for window overlap.')
+        elif not self.window_overlap:
+            self.window_overlap = 1
+            print(f'[-] Using default window overlap: {self.window_overlap}')
 
         if self.optimization and 1 > self.optimization > 3:
-            exit('You must an integer value in [1, 3] for Optimization.')
+            exit('[!] You must an integer value in [1, 3] for Optimization.')
 
         if not self.interactive_mode:
             if not self.target_file_path:
-                exit('You must provide a Target file.')
+                exit('[!] You must provide a Target file.')
+
+
+    def print_usage(self):
+
+        print('Usage: locatelang [arguments]')
+        print('Arguments:')
+        print('-e \t Executable path')
+        print('-r \t Directory with reference files')
+        print('-t \t Target file')
+        print('-it \t Interactive mode')
+        print('-w \t Window size')
+        print('-O \t Optimization Level')
+        print('-o \t Window Overlap')
 
 
 class Colors:

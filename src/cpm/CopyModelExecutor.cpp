@@ -36,6 +36,8 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                 informationPerIteration->insert({fileReader->getCurrentPosition(), calculateHitProbability(0,0, alpha)});
             }
 
+            // std::cout << "TEST" << std::endl;
+
             int currentPointerIndex = 0;
 
             // If I haven't chosen a pointer for this sequence yet, chose the first pointer
@@ -62,7 +64,9 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
 
             while (fileReader->expand()) {
 
-                // std::cout << "DEBUG 1.5" << std::endl;
+                // std::cout << "DEBUG 1.5 " << pastSequencePosition + expandedCharacters+1 << std::endl;
+                // std::cout << "Past Sequence Position " << pastSequencePosition << std::endl;
+                // std::cout << "Expanded Characters" << expandedCharacters+1 << std::endl;
 
                 // int pastSequenceOffset = (int)fileReader.getCurrentSequence()->size() - (fileReader.getWindowSize()-1);
                 std::string predictedChar = sequentialAccessReader->getCharacterAt(pastSequencePosition + expandedCharacters++);
@@ -136,7 +140,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
 
             }
 
-            if (probabilityOfCorrectPrediction < threshold && positionalModel[sequenceAsString].size() > 1) {
+            if (probabilityOfCorrectPrediction < threshold && positionalModel[sequenceAsString].size() > 1 && positionalModel[sequenceAsString].size()-1 > currentPointerIndexForSequence[sequenceAsString]) {
                 // Change the pointer to the next one
                 currentPointerIndexForSequence[sequenceAsString] += 1;
             }
