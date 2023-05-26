@@ -4,6 +4,7 @@
 #include "Reader.h"
 
 #include <string>
+#include <vector>
 
 class SequentialReader : public Reader {
 

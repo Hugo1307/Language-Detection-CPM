@@ -69,11 +69,6 @@ bool CopyModelReader::expand() {
         return false;
     }
 
-    // TODO: When we read a new character, we are reading an integer. This integer is then converted to a char.
-    // In practice, it will be truncated and we will only obtain the first 1 Byte. This is the reason why our windows
-    // are not working properly, i.e., they usually have the "?" mark at the beginning and at the end.
-    // We need to find a way to solve this in the future.
-
     std::string nextCharacter = Reader::readCharacter();
     this->currentWindow.push_back(nextCharacter);
 
