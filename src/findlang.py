@@ -21,6 +21,10 @@ def main():
 
     target_file_path = input_arguments.target_file_path
 
+    if not os.path.exists(target_file_path):
+        print('[!] The target file does not exists.')
+        return
+
     if input_arguments.interactive_mode:
         
         target_file_path = join(os.path.dirname(input_arguments.target_file_path), 'tempTarget.txt')

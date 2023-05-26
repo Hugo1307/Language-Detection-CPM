@@ -66,7 +66,9 @@ def main():
         target_file_name = os.path.basename(input_arguments.target_file_path)
         target_dir_name = os.path.dirname(input_arguments.target_file_path)
 
-        expected_results = obtain_expected_results(join(join(target_dir_name, 'results'), target_file_name))
+        exact_results_path = join(join(target_dir_name, 'results'), target_file_name)
+
+        expected_results = obtain_expected_results(exact_results_path)
         obtained_results = obtain_results(history)
         
         precision = evaluate_model(expected_results, obtained_results)
@@ -304,21 +306,18 @@ def evaluate_model(expected_results: dict, obtained_results: dict):
     for idx in expected_results.keys():
 
         if idx not in obtained_results.keys():
-            # misses += 1
-            # print(f'Added One Miss because idx {idx} was not found in obtained results')
+            misses += 1
             continue
 
         if expected_results[idx] == obtained_results[idx]:
-            # print(f"Hit: Idx {idx}, Expected {expected_results[idx]}, Obtained {obtained_results[idx]}")
             hits += 1
         else:
-            # print(f"Miss: Idx {idx}, Expected {expected_results[idx]}, Obtained {obtained_results[idx]}")
             misses += 1
 
     return round(hits/(hits+misses)*100, 2)
 
 
-def print_results(target_text: str, obtained_results: dict, precision: float):
+def print_results(target_text: str, obtained_results: dict, accuracy: float):
 
     obtained_languages_list = list(set(obtained_results.values()))
     available_colors = [Colors.FORE_RED, Colors.FORE_CYAN, Colors.FORE_YELLOW, Colors.FORE_GREEN, Colors.FORE_BLUE, Colors.FORE_MAGENTA,
@@ -332,7 +331,7 @@ def print_results(target_text: str, obtained_results: dict, precision: float):
     print()
     print(f'{Colors.BOLD}Results{Colors.RESET}')
     print()
-    print(f'Precision: {precision}%')
+    print(f'Accuracy: {accuracy}%')
     print()
 
     for character_idx in range(len(target_text)):
