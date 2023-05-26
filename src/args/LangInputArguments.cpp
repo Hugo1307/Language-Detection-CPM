@@ -44,7 +44,6 @@ void LangInputArguments::printUsage() {
     std::cout << "-r \t File with reference sequence" << std::endl;
     std::cout << "-i \t File with target sequence" << std::endl;
     std::cout << "-o \t File with lang output" << std::endl;
-    std::cout << "-m \t Output model path" << std::endl;
     std::cout << "-a \t Alpha" << std::endl;
     std::cout << "-k \t Window size" << std::endl;
     std::cout << "-t \t Threshold" << std::endl;

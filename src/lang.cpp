@@ -72,7 +72,6 @@ FileInfoReader obtainFileInfo(LangInputArguments* arguments) {
 
 CopyModelOutput runCopyModel(LangInputArguments* arguments, FileInfoReader* fileInfoReader, GeneratedModel* model) {
 
-    // Todo: Run the model over the target file
     auto* copyModelReader = new CopyModelReader(arguments->getTargetFilePath(), arguments->getK());
     auto* sequentialAccessReader = new SequentialReader(arguments->getReferenceFilePath());
 

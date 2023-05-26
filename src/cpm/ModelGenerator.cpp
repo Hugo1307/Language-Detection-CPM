@@ -24,7 +24,7 @@ void ModelGenerator::run() {
         if (this->finiteContextCounts[lastCharacterOfSequence].count(sequenceWithoutLastCharacter) != 0) {
             this->finiteContextCounts[lastCharacterOfSequence][sequenceWithoutLastCharacter] += 1;
         } else {
-            this->finiteContextCounts[lastCharacterOfSequence][sequenceWithoutLastCharacter] += 0;
+            this->finiteContextCounts[lastCharacterOfSequence][sequenceWithoutLastCharacter] = 0;
         }
 
     }
