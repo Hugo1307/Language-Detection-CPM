@@ -170,7 +170,7 @@ def obtain_languages_window(languages_info: dict, window_size: int, window_overl
             break
 
         # Update the Window for Next Iteration
-        window_start_idx += int(int(window_size)*window_overlap)
+        window_start_idx += max(int(int(window_size)*window_overlap), 1)
         window_last_idx = window_start_idx + window_size
 
     languages_counts = dict(sorted(languages_counts.items(), key=lambda x: x[1], reverse=True))
@@ -279,7 +279,9 @@ def print_results(target_text: str, obtained_results: dict, accuracy: float):
     obtained_languages_list = list(set(obtained_results.values()))
     available_colors = [Colors.FORE_RED, Colors.FORE_CYAN, Colors.FORE_YELLOW, Colors.FORE_GREEN, Colors.FORE_BLUE, Colors.FORE_MAGENTA,
                         Colors.FORE_RED_UNDER, Colors.FORE_CYAN_UNDER, Colors.FORE_YELLOW_UNDER, Colors.FORE_GREEN_UNDER, Colors.FORE_BLUE_UNDER, Colors.FORE_MAGENTA_UNDER,
-                        Colors.FORE_RED_ITALIC, Colors.FORE_CYAN_ITALIC, Colors.FORE_YELLOW_ITALIC, Colors.FORE_GREEN_ITALIC, Colors.FORE_BLUE_ITALIC, Colors.FORE_MAGENTA_ITALIC]
+                        Colors.FORE_RED_ITALIC, Colors.FORE_CYAN_ITALIC, Colors.FORE_YELLOW_ITALIC, Colors.FORE_GREEN_ITALIC, Colors.FORE_BLUE_ITALIC, Colors.FORE_MAGENTA_ITALIC,
+                        Colors.FORE_RED_STRIKE, Colors.FORE_CYAN_STRIKE, Colors.FORE_YELLOW_STRIKE, Colors.FORE_GREEN_STRIKE, Colors.FORE_BLUE_STRIKE, Colors.FORE_MAGENTA_STRIKE]
+    
     languages_color_dict = { language : color for language, color in zip(obtained_languages_list, available_colors) }
 
     last_language = None
@@ -299,6 +301,7 @@ def print_results(target_text: str, obtained_results: dict, accuracy: float):
             character_language = last_language
 
         character_color = languages_color_dict[character_language]
+
         last_language = character_language
 
         print(f'{character_color}{target_text[character_idx]}{Colors.RESET}', end='')
@@ -424,6 +427,13 @@ class Colors:
     FORE_GREEN_ITALIC = '\033[32;3m'
     FORE_YELLOW_ITALIC = '\033[33;3m'
     FORE_MAGENTA_ITALIC = '\033[35;3m'
+
+    FORE_RED_STRIKE = '\033[31;9m'
+    FORE_BLUE_STRIKE = '\033[34;9m'
+    FORE_CYAN_STRIKE = '\033[36;9m'
+    FORE_GREEN_STRIKE = '\033[32;9m'
+    FORE_YELLOW_STRIKE = '\033[33;9m'
+    FORE_MAGENTA_STRIKE = '\033[35;9m'
 
     WARNING = '\033[93m'
     FAIL = '\033[91m'
