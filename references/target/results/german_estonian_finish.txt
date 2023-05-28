@@ -1,8 +1,0 @@
-finish -> (0 : 82)
-german -> (83 : 178)
-finish -> (179 : 284)
-german -> (285 : 407)
-estonian -> (408 : 437)
-german -> (438 : 473)
-finish -> (474 : 907)
-german -> (908 : 1061)

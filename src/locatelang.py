@@ -45,11 +45,14 @@ def main():
             print(f'Testing Language: {remove_file_extension(entry.name).upper()}     ', end='\r')
             
             output_path = f'../output/lang_output_{remove_file_extension(entry.name)}.txt'
+            
+            lang_window_size = input_arguments.lang_window_size
+            use_finite_context = input_arguments.use_finite_context
 
             if os.path.exists(output_path):
                 os.remove(output_path)
 
-            execute_lang(input_arguments.executable, entry, target_file_path, output_path)
+            execute_lang(input_arguments.executable, entry, target_file_path, output_path, lang_window_size, use_finite_context)
 
             with open(output_path, 'r') as outputFile:
 
@@ -79,10 +82,14 @@ def main():
         print_results(txt, obtained_results, precision)
 
 
-def execute_lang(executable_path: str, reference_path: str, target_path: str, output_path: str):
+def execute_lang(executable_path: str, reference_path: str, target_path: str, output_path: str, window_size: int, use_finite_context: bool):
 
-    subprocess.run([executable_path, '-r', reference_path, '-i', target_path, '-o', output_path], 
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if use_finite_context:
+        subprocess.run([executable_path, '-r', reference_path, '-i', target_path, '-o', output_path, '-k', str(window_size)], 
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    else:
+        subprocess.run([executable_path, '-r', reference_path, '-i', target_path, '-o', output_path, '-k', str(window_size), '-nFC'], 
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def remove_file_extension(file_name: str) -> str:
@@ -170,57 +177,6 @@ def obtain_languages_window(languages_info: dict, window_size: int, window_overl
     return languages_detection_history, languages_counts
 
 
-#def identify_language_v2(information_data: dict, window_size: float):
-
-    # Identify language with most information
-    complete_information_data = information_data
-
-    information_data = {key : list(map(lambda x: x[1], value)) for key, value in information_data.items() }
-
-    min_information = min([len(information_data[language]) for language in information_data])
-
-    current_starting_index = 0
-
-    current_language = None
-    current_min = float('inf')
-
-    languages_found = {}
-
-    while current_starting_index < min_information - window_size:
-        
-        iteration_languages_with_avg = {}
-
-        for language in information_data.keys():
-            
-            current_language_data = information_data[language]
-            current_window = current_language_data[current_starting_index : min(len(current_language_data), current_starting_index+window_size)]
-
-            if len(current_window) != 0:
-                window_average = mean(current_window)
-                iteration_languages_with_avg[language] = current_window
-
-        iteration_languages_sorted = dict(sorted(iteration_languages_with_avg.items(), key=lambda item: calc_window_weight(item[1])))
-
-        items_list = list(iteration_languages_sorted.items())
-
-        if items_list[0][1] is not None and items_list[0][0] != current_language and items_list[0][0] in ['portuguese.txt', 'bulgarian.txt', 'dutch.txt']:
-            current_language = items_list[0][0]
-
-            if current_language in languages_found:
-                languages_found[current_language] += 1
-            else:
-                languages_found[current_language] = 1
-
-            print(f'Changed Current Language to {current_language} on index {current_starting_index} - {calc_window_weight(items_list[0][1])}')
-            # print(f'{iteration_languages_sorted}')
-
-            # print(f'Current window average for language {language} is {window_average}')
-
-        current_starting_index += 1
-
-    print(dict(sorted(languages_found.items(), key=lambda x: x[1], reverse=True)))
-        
-
 def identify_language(information_per_file: str, window_size: int, optimization_cycles: int, window_overlap: float):
 
     languages_to_exclude = {}
@@ -234,25 +190,26 @@ def identify_language(information_per_file: str, window_size: int, optimization_
         
         files_info = information_per_file
 
-        for i in range(optimization_cycles):
+        for i in range(optimization_cycles+1):
             
             files_info = dict(filter(lambda x: x[0] not in languages_to_exclude, files_info.items()))
 
             history, languages = obtain_languages_window(files_info, window_size, window_overlap)
             
             # optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / (4-optimization_cycles))
-            optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / len(languages.values()) * optimization_cycles)+1
+            optimization_threshold = ceil(mean([lang_count for lang_count in languages.values()]) / (len(languages.values())+1) * optimization_cycles)
 
             languages_to_exclude = set(dict(filter(lambda x: x[1] <= optimization_threshold, languages.items())).keys())
 
             print(f'[!] Optimization Step {i}: Languages: {languages}')
-            
+
             # If not in the last optimization cycle
             if i < optimization_cycles-1:
+
                 print(f'[!] Optimization Step {i}: Threshold: {optimization_threshold}')
                 print(f'[!] Optimization Step {i}: Excluding: {languages_to_exclude}')
 
-            if len(languages_to_exclude) == 0:
+            if len(languages_to_exclude) == 0 or len(languages) <= 2:
                 break 
 
         return history
@@ -365,7 +322,9 @@ class InputArguments:
         self.lang_output_path = None
         self.window_size = None
         self.optimization = None     
-        self.window_overlap = None                                                                
+        self.window_overlap = None    
+        self.lang_window_size = None
+        self.use_finite_context = None                                                            
 
 
     def parse_arguments(self, argv):
@@ -385,6 +344,10 @@ class InputArguments:
                 self.window_size = int(argv[argv.index(arg) + 1])
             elif arg == '-o' or arg == '--overlap':
                 self.window_overlap = float(1-float(argv[argv.index(arg) + 1]))
+            elif arg == '-k' or arg == '--langWindowSize':
+                self.lang_window_size = int(argv[argv.index(arg) + 1])
+            elif arg == '-nFC' or arg == '--noFiniteContext':
+                self.use_finite_context = False
             elif arg == '-h' or arg == '--help':
                 self.print_usage()
     
@@ -404,7 +367,7 @@ class InputArguments:
             print('[!] You must specify a value between 0 and 1 for window overlap.')
         elif not self.window_overlap:
             self.window_overlap = 1
-            print(f'[-] Using default window overlap: {self.window_overlap}')
+            print(f'[-] Using default window overlap: {1-self.window_overlap}')
 
         if self.optimization and 1 > self.optimization > 3:
             exit('[!] You must an integer value in [1, 3] for Optimization.')
@@ -412,6 +375,13 @@ class InputArguments:
         if not self.interactive_mode:
             if not self.target_file_path:
                 exit('[!] You must provide a Target file.')
+
+        if not self.lang_window_size:
+            self.lang_window_size = 5
+            print(f'[-] Using default window size {self.lang_window_size}')
+
+        if self.use_finite_context is None:
+            self.use_finite_context = True
 
 
     def print_usage(self):
@@ -425,6 +395,8 @@ class InputArguments:
         print('-w \t Window size')
         print('-O \t Optimization Level')
         print('-o \t Window Overlap')
+        print('-k \t Window Size for Lang CPM')
+        print('-nFC \t Disable Finite Context for Lang CPM')
 
 
 class Colors:

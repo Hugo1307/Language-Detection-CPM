@@ -30,7 +30,7 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
         // If the sequence exists in the positional Model
         if (positionalModel.count(sequenceAsString) > 0) {
 
-            std::cout << "Exists in Positional Model: "  << sequenceAsString << std::endl;
+            // std::cout << "Exists in Positional Model: "  << sequenceAsString << std::endl;
 
             for (int i = 1; i < fileReader->getWindowSize()-1; i++) {
                 informationPerIteration->insert({fileReader->getCurrentPosition(), calculateHitProbability(0,0, alpha)});
@@ -92,8 +92,8 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                     // account the probability of the character being correct
                     double currentInformation = -std::log2(probabilityOfCorrectPrediction);
 
-                    std::cout << "Current Information (on Hit " << convertStringVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
-                    std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
+                    // std::cout << "Current Information (on Hit " << convertStringVectorToString(fileReader->getCurrentWindow()) << "): " << currentInformation << std::endl;
+                    // std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
                     informationAmount += currentInformation;
                     informationPerIteration->insert({fileReader->getCurrentPosition(), currentInformation});
@@ -127,8 +127,8 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
                     // account the probability of the character being correct
                     double currentInformation = -std::log2(probabilityOfFail);
 
-                    std::cout << "Current Information (on Fail " << convertStringVectorToString(fileReader->getCurrentWindow()) << " expecting " << predictedChar <<  "): " << currentInformation << std::endl;
-                    std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
+                    // std::cout << "Current Information (on Fail " << convertStringVectorToString(fileReader->getCurrentWindow()) << " expecting " << predictedChar <<  "): " << currentInformation << std::endl;
+                    // std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
                     informationAmount += currentInformation;
                     informationPerIteration->insert({fileReader->getCurrentPosition(), currentInformation});
@@ -151,8 +151,8 @@ void CopyModelExecutor::run(double alpha, double threshold, bool useFiniteContex
             // calculate the information and add it to the total amount of information
             double currentInformation = -std::log2(1.0 / (int)fileInfoReader->getAlphabet().size());
 
-            std::cout << "Current Information (on Not Found " << sequenceAsString << " Size " << sequenceAsString.size() << "): " << currentInformation << std::endl;
-            std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
+            // std::cout << "Current Information (on Not Found " << sequenceAsString << " Size " << sequenceAsString.size() << "): " << currentInformation << std::endl;
+            // std::cout << "Position " << fileReader->getCurrentPosition() << std::endl;
 
             informationAmount += currentInformation;
 

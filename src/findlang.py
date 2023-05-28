@@ -12,7 +12,6 @@ def main():
     # -it: Interactive mode (allows to input text in the terminal and use it as target)
     # -t: Target File 
     # -o: Output File Path for Lang (Optional)
-    # -m: Model Directory Path for Lang (Optional)
 
     input_arguments = InputArguments()
 
@@ -44,7 +43,10 @@ def main():
             
             print(f'Testing Language: {remove_file_extension(entry.name).upper()}     ', end='\r')
             
-            execute_lang(input_arguments.executable, entry, target_file_path, input_arguments.lang_output_path)
+            window_size = input_arguments.window_size
+            use_finite_context = input_arguments.use_finite_context
+
+            execute_lang(input_arguments.executable, entry, target_file_path, input_arguments.lang_output_path, window_size, use_finite_context)
 
             with open(input_arguments.lang_output_path, 'r') as outputFile:
                 lines = outputFile.readlines()
@@ -55,12 +57,16 @@ def main():
     print_results(information_per_file)
 
 
-def execute_lang(executable_path: str, reference_path: str, target_path: str, output_path: str):
+def execute_lang(executable_path: str, reference_path: str, target_path: str, output_path: str, window_size: int, use_finite_context: bool):
 
     models_path = '../models'
 
-    subprocess.run([executable_path, '-r', reference_path, '-i', target_path, '-o',  output_path, '-m', models_path], 
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if use_finite_context:
+        subprocess.run([executable_path, '-r', reference_path, '-i', target_path, '-o',  output_path, '-m', models_path, '-k', window_size], 
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    else:
+        subprocess.run([executable_path, '-r', reference_path, '-i', target_path, '-o',  output_path, '-m', models_path, '-k', window_size, '-nFC'], 
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def remove_file_extension(file_name: str) -> str:
@@ -107,7 +113,8 @@ class InputArguments:
         self.target_file_path = None
         self.interactive_mode = False
         self.lang_output_path = None
-        self.lang_models_directory = None
+        self.window_size = None
+        self.use_finite_context = None
 
     def parse_arguments(self, argv):
 
@@ -122,8 +129,10 @@ class InputArguments:
                 self.interactive_mode = True
             elif arg == '-o' or arg == '--output':
                 self.lang_output_path = argv[argv.index(arg) + 1]
-            elif arg == '-m' or arg == '--model':
-                self.lang_models_directory = argv[argv.index(arg) + 1]
+            elif arg == '-k' or arg == '--windowSize':
+                self.window_size = argv[argv.index(arg) + 1]
+            elif arg == '-nFC' or arg == '--noFiniteContext':
+                self.use_finite_context = False
 
     def check_arguments(self):
 
@@ -137,8 +146,14 @@ class InputArguments:
         if not self.lang_output_path:
             self.lang_output_path = '../output/lang_output.txt'
 
-        if not self.lang_models_directory:
-            self.lang_models_directory = '../models'
+        if not self.window_size:
+            self.window_size = 3
+            print(f'[-] Using default window size: {self.window_size}')
+
+        if not self.use_finite_context:
+            self.use_finite_context = True
+            print(f'[-] Using Finite Context Model')
+
 
 if __name__ == "__main__":
     main()
