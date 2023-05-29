@@ -1,5 +1,13 @@
 # Language Detection using Copy Models
 
+To build our program, we have developed a script called build-project.sh. This script can be found in the root of our project. In order to run the script and compile the program, you need CMake with a version higher or equal to 2.16.
+
+```bash
+./build-project.sh
+```
+
+After running this script, the binary for the Copy Model (Lang) should be available inside the /bin folder.
+
 ## Lang
 
 Runs the copy model for a certain target using a reference file.
