@@ -381,7 +381,7 @@ class InputArguments:
 
         if not self.lang_window_size:
             self.lang_window_size = 5
-            print(f'[-] Using default window size {self.lang_window_size}')
+            print(f'[-] Using default CPM window size {self.lang_window_size}')
 
         if self.use_finite_context is None:
             self.use_finite_context = True
