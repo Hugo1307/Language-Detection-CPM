@@ -353,6 +353,7 @@ class InputArguments:
                 self.use_finite_context = False
             elif arg == '-h' or arg == '--help':
                 self.print_usage()
+                exit()
     
     def check_arguments(self):
         
